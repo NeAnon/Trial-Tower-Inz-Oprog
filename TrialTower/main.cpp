@@ -5,6 +5,10 @@
 #include <string>
 #include <vector>
 
+//debugging
+#include <iostream>
+#include "debugFuncs.h"
+
 //Wrapped texture class 
 #include "WTexture.h"
 
@@ -150,7 +154,9 @@ int main(int argc, char* args[])
 			wallMap[6][7] = 1;
 			wallMap[4][5] = 1;
 
-			printf("Loading successful!");
+			//std::wcout << "---------------path------------------" << std::endl;
+			//std::wcout << ExePath() << std::endl;
+			//std::wcout << "---------------path------------------" << std::endl;
 
 			//While the application is running...
             while (!quit)
