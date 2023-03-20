@@ -140,13 +140,15 @@ int main(int argc, char* args[])
 			enemy1->loadEnemyMedia();
 			Enemy* enemy2 = new Enemy(7, 7);
 			enemy2->setRenderer(gRenderer);
-
-			//enemy2->loadMedia("enemySpriteSheetTransparent.png");
-			enemy2->loadMedia("wall_light.png");
+			enemy2->loadEnemyMedia();
 
 			Wall sampleWall;
 			sampleWall.setRenderer(gRenderer);
 			sampleWall.loadMedia();
+
+			Portal portal;
+			portal.setRenderer(gRenderer);
+			portal.loadMedia();
 
 			std::vector< std::vector<int> > wallMap;
 			std::vector< Entity* > enemyList;
@@ -171,6 +173,8 @@ int main(int argc, char* args[])
 
 			wallMap[7][7] = 2;
 			wallMap[10][5] = 2;
+
+			wallMap[14][10] = 3;
 
 			//std::wcout << "---------------path------------------" << std::endl;
 			//std::wcout << ExePath() << std::endl;
@@ -224,6 +228,19 @@ int main(int argc, char* args[])
 						if (wallMap[i][j] == 1) { sampleWall.render(i, j); }
 						if (enemyList[0] != nullptr) { enemy1->render(); }
 						if (enemyList[1] != nullptr) { enemy2->render(); }
+						if (wallMap[i][j] == 3){
+							if (player.getX() == i && player.getY() == j) {
+								if (enemyList[0] != nullptr || enemyList[1] != nullptr) {
+									portal.render(i, j, true);
+								} else {
+									std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
+									quit = true;
+								}
+							}
+							else {
+								portal.render(i, j);
+							}
+						}
 					}
 				}
 
