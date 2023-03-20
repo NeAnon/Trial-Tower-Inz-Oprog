@@ -135,18 +135,24 @@ int main(int argc, char* args[])
 			player.setRenderer(gRenderer);
 			player.loadPlayerMedia();
 
-			Enemy enemy1(10, 5);
-			enemy1.setRenderer(gRenderer);
-			enemy1.loadEnemyMedia();
-			//Enemy enemy2(7, 7);
-			//enemy2.setRenderer(gRenderer);
-			//enemy2.loadEnemyMedia();
+			Enemy* enemy1 = new Enemy(10, 5);
+			enemy1->setRenderer(gRenderer);
+			enemy1->loadEnemyMedia();
+			Enemy* enemy2 = new Enemy(7, 7);
+			enemy2->setRenderer(gRenderer);
+
+			//enemy2->loadMedia("enemySpriteSheetTransparent.png");
+			enemy2->loadMedia("wall_light.png");
 
 			Wall sampleWall;
 			sampleWall.setRenderer(gRenderer);
 			sampleWall.loadMedia();
 
 			std::vector< std::vector<int> > wallMap;
+			std::vector< Entity* > enemyList;
+			enemyList.resize(2);
+			enemyList[0] = enemy1;
+			enemyList[1] = enemy2;
 
 			wallMap.resize(SCREEN_WIDTH / TILE_SIZE);
 			for (int i = 0; i < wallMap.size(); i++) {
@@ -164,7 +170,7 @@ int main(int argc, char* args[])
 			wallMap[4][5] = 1;
 
 			wallMap[7][7] = 2;
-			//wallMap[10][5] = 2;
+			wallMap[10][5] = 2;
 
 			//std::wcout << "---------------path------------------" << std::endl;
 			//std::wcout << ExePath() << std::endl;
@@ -188,19 +194,19 @@ int main(int argc, char* args[])
 						switch (e.key.keysym.sym)
 						{
 						case SDLK_UP:
-							player.move(DIRECTION_UP, wallMap);
+							player.move(DIRECTION_UP, wallMap, enemyList);
 							break;
 
 						case SDLK_DOWN:
-							player.move(DIRECTION_DOWN, wallMap);
+							player.move(DIRECTION_DOWN, wallMap, enemyList);
 							break;
 
 						case SDLK_LEFT:
-							player.move(DIRECTION_LEFT, wallMap);
+							player.move(DIRECTION_LEFT, wallMap, enemyList);
 							break;
 
 						case SDLK_RIGHT:
-							player.move(DIRECTION_RIGHT, wallMap);
+							player.move(DIRECTION_RIGHT, wallMap, enemyList);
 							break;
 
 						default:
@@ -216,7 +222,8 @@ int main(int argc, char* args[])
 				for (int i = 0; i < wallMap.size(); i++) {
 					for (int j = 0; j < wallMap[i].size(); j++) {
 						if (wallMap[i][j] == 1) { sampleWall.render(i, j); }
-						if (wallMap[i][j] == 2) { enemy1.render(); }
+						if (enemyList[0] != nullptr) { enemy1->render(); }
+						if (enemyList[1] != nullptr) { enemy2->render(); }
 					}
 				}
 
@@ -225,6 +232,8 @@ int main(int argc, char* args[])
 				//Update screen (must be after rendering everything prior!!!)
                 SDL_RenderPresent(gRenderer);
 			}
+			if (enemyList[0] != nullptr) { delete enemyList[0]; }
+			if (enemyList[1] != nullptr) { delete enemyList[1]; }
 		}
 	}
 

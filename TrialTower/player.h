@@ -37,7 +37,7 @@ public:
 	~Entity();
 
 	//Movement handler
-	void move(int direction, std::vector<std::vector<int> > &wallMap);
+	void move(int direction, std::vector<std::vector<int> > &wallMap, std::vector< Entity* > &enemyList);
 };
 
 inline Entity::Entity() : Object() {
@@ -53,7 +53,7 @@ inline Entity::~Entity()
 
 }
 
-inline void Entity::move(int direction, std::vector<std::vector<int> > &wallMap)
+inline void Entity::move(int direction, std::vector<std::vector<int> > &wallMap, std::vector< Entity* > &enemyList)
 {
 	//Set clip square to entity's current direction (use case if irregular sprite sizes)
 	setClip(direction, 0);
@@ -65,15 +65,47 @@ inline void Entity::move(int direction, std::vector<std::vector<int> > &wallMap)
 	switch (direction) {
 	case DIRECTION_UP:
 		if ((currY - 1 >= 0) && wallMap[currX][currY - 1] == 0) { setY(--currY); }
+		else{
+			for (int i = 0; i < enemyList.size(); i++) {
+				if (enemyList[i] != nullptr && currX == enemyList[i]->getX() && currY - 1 == enemyList[i]->getY()) {
+					wallMap[enemyList[i]->getX()][enemyList[i]->getY()] = 0;
+					delete enemyList[i]; enemyList[i] = nullptr;
+				}
+			}
+		}
 		break;
 	case DIRECTION_RIGHT:
 		if ((currX + 1 < wallMap.size()) && wallMap[currX + 1][currY] == 0) { setX(++currX); }
+		else{
+			for (int i = 0; i < enemyList.size(); i++) {
+				if (enemyList[i] != nullptr && currX + 1 == enemyList[i]->getX() && currY == enemyList[i]->getY()) {
+					wallMap[enemyList[i]->getX()][enemyList[i]->getY()] = 0;
+					delete enemyList[i]; enemyList[i] = nullptr;
+				}
+			}
+		}
 		break;
 	case DIRECTION_DOWN:
 		if ((currY + 1 < wallMap[currX].size()) && wallMap[currX][currY + 1] == 0) { setY(++currY); }
+		else {
+			for (int i = 0; i < enemyList.size(); i++) {
+				if (enemyList[i] != nullptr && currX == enemyList[i]->getX() && currY + 1 == enemyList[i]->getY()) {
+					wallMap[enemyList[i]->getX()][enemyList[i]->getY()] = 0;
+					delete enemyList[i]; enemyList[i] = nullptr;
+				}
+			}
+		}
 		break;
 	case DIRECTION_LEFT:
 		if ((currX - 1 >= 0) && wallMap[currX - 1][currY] == 0) { setX(--currX); }
+		else {
+			for (int i = 0; i < enemyList.size(); i++) {
+				if (enemyList[i] != nullptr && currX - 1 == enemyList[i]->getX() && currY == enemyList[i]->getY()) {
+					wallMap[enemyList[i]->getX()][enemyList[i]->getY()] = 0;
+					delete enemyList[i]; enemyList[i] = nullptr;
+				}
+			}
+		}
 		break;
 	default:
 		break;
@@ -92,7 +124,6 @@ public:
 	void loadPlayerMedia() {
 		//Load media specifically used by the player
 		loadMedia("playerSpriteSheetTransparent.png");
-		
 	}
 
 	std::string echo() { return "Player"; }
@@ -117,18 +148,19 @@ public:
 
 	void loadEnemyMedia() {
 		//Load media specifically used by the enemies
-		//loadMedia("enemySpriteSheetTransparent.png");
-
-		loadMedia("enemySpriteSheetTransparent.png");
+		loadMedia("wall_light.png");
 	}
 
 	std::string echo() { return "Enemy"; }
 };
 
-inline Enemy::Enemy() :Entity() {}
+inline Enemy::Enemy() :Entity() {
+	printf("Enemy alive!\n");
+}
 
 inline Enemy::Enemy(int x, int y) : Entity(x, y) {}
 
 inline Enemy::~Enemy()
 {
+	printf("Enemy dead!\n");
 }
