@@ -131,15 +131,23 @@ int main(int argc, char* args[])
 			SDL_Event e;
 
 			//Player character
-			Player player;
-			player.setPlayerRenderer(gRenderer);
+			Player player(2, 2);
+			player.setRenderer(gRenderer);
 			player.loadPlayerMedia();
+
+			Enemy enemy1(10, 5);
+			enemy1.setRenderer(gRenderer);
+			enemy1.loadEnemyMedia();
+			//Enemy enemy2(7, 7);
+			//enemy2.setRenderer(gRenderer);
+			//enemy2.loadEnemyMedia();
 
 			Wall sampleWall;
 			sampleWall.setRenderer(gRenderer);
 			sampleWall.loadMedia();
 
 			std::vector< std::vector<int> > wallMap;
+
 			wallMap.resize(SCREEN_WIDTH / TILE_SIZE);
 			for (int i = 0; i < wallMap.size(); i++) {
 				wallMap[i].resize(SCREEN_HEIGHT / TILE_SIZE);
@@ -150,9 +158,13 @@ int main(int argc, char* args[])
 					wallMap[i][j] = 0;
 				}
 			}
+			
 			wallMap[3][3] = 1;
 			wallMap[6][7] = 1;
 			wallMap[4][5] = 1;
+
+			wallMap[7][7] = 2;
+			//wallMap[10][5] = 2;
 
 			//std::wcout << "---------------path------------------" << std::endl;
 			//std::wcout << ExePath() << std::endl;
@@ -203,7 +215,8 @@ int main(int argc, char* args[])
 
 				for (int i = 0; i < wallMap.size(); i++) {
 					for (int j = 0; j < wallMap[i].size(); j++) {
-						if (wallMap[i][j] > 0) { sampleWall.render(i, j); }
+						if (wallMap[i][j] == 1) { sampleWall.render(i, j); }
+						if (wallMap[i][j] == 2) { enemy1.render(); }
 					}
 				}
 

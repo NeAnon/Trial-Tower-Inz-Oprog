@@ -10,8 +10,8 @@
 //Wrapped texture class 
 #include "WTexture.h"
 
-//Wall handling
-#include "wall.h"
+//Entites are objects, so
+#include "object.h"
 
 
 //Directionals corresponding to images on the sprite sheet
@@ -23,83 +23,112 @@ enum {
 	DIRECTION_LEFT,		//4
 };
 
-class Player {
+class Entity : public Object {
 private:
-	//Player texture and current sprite
-	WTexture mTexture;
-	SDL_Rect clip;
-
-	//Player position (in tiles)
-	int mPosX;
-	int mPosY;
 
 public:
-	//Player contructor
-	Player();
+	//Entity contructor
+	Entity();
 
-	//Player destructor
-	~Player();
+	//Entity contructor at pos
+	Entity(int x, int y);
 
-	//Sets renderer for own texture
-	void setPlayerRenderer(SDL_Renderer* renderPtr) { mTexture.setRenderer(renderPtr); }
-
-	//Load any media required to display the player
-	void loadPlayerMedia()
-	{
-		//Load player texture	
-		if (!mTexture.loadFromFile("resources/playerSpriteSheetTransparent.png"))
-		{
-			printf("Failed to load player texture!\n");
-		}
-	}
+	//Entity destructor
+	~Entity();
 
 	//Movement handler
 	void move(int direction, std::vector<std::vector<int> > &wallMap);
-
-	//Renders the player at their position
-	void render();
 };
 
-inline Player::Player() {
-	//Set dimensions of player's sprites
-	clip = { 0, 0, 32, 32 };
+inline Entity::Entity() : Object() {
 
-	//Set player position (specified as grid params)
-	mPosX = 1; mPosY = 1;
 }
 
-inline Player::~Player()
-{
-	//Deallocate stored texture to avoid memory leakage
-	mTexture.free();
+inline Entity::Entity(int x, int y) : Object(x, y) {
+
 }
 
-inline void Player::move(int direction, std::vector<std::vector<int> > &wallMap)
+inline Entity::~Entity()
 {
-	//Set clip square to player's current direction (use case if irregular sprite sizes)
-	clip.x = direction * 32;
-	
-	//Depending on direction pressed, if within boundaries and not about to run into a wall, move the player
+
+}
+
+inline void Entity::move(int direction, std::vector<std::vector<int> > &wallMap)
+{
+	//Set clip square to entity's current direction (use case if irregular sprite sizes)
+	setClip(direction, 0);
+
+	int currX = getX();
+	int currY = getY();
+
+	//Depending on direction chosen, if within boundaries and not about to run into a wall, move the entity
 	switch (direction) {
 	case DIRECTION_UP:
-		if ((mPosY - 1 >= 0) && wallMap[mPosX][mPosY - 1] == 0) { mPosY--; }
+		if ((currY - 1 >= 0) && wallMap[currX][currY - 1] == 0) { setY(--currY); }
 		break;
 	case DIRECTION_RIGHT:
-		if ((mPosX + 1 < wallMap.size()) && wallMap[mPosX + 1][mPosY] == 0) { mPosX++; }
+		if ((currX + 1 < wallMap.size()) && wallMap[currX + 1][currY] == 0) { setX(++currX); }
 		break;
 	case DIRECTION_DOWN:
-		if ((mPosY + 1 < wallMap[mPosX].size()) && wallMap[mPosX][mPosY + 1] == 0) { mPosY++; }
+		if ((currY + 1 < wallMap[currX].size()) && wallMap[currX][currY + 1] == 0) { setY(++currY); }
 		break;
 	case DIRECTION_LEFT:
-		if ((mPosX - 1 >= 0) && wallMap[mPosX-1][mPosY] == 0) { mPosX--; } 
+		if ((currX - 1 >= 0) && wallMap[currX - 1][currY] == 0) { setX(--currX); }
 		break;
 	default:
 		break;
 	}
 }
 
-inline void Player::render()
+class Player : public Entity {
+
+public:
+	Player();
+
+	Player(int x, int y);
+
+	~Player();
+
+	void loadPlayerMedia() {
+		//Load media specifically used by the player
+		loadMedia("playerSpriteSheetTransparent.png");
+		
+	}
+
+	std::string echo() { return "Player"; }
+};
+
+inline Player::Player():Entity(){}
+
+inline Player::Player(int x, int y):Entity(x, y){}
+
+inline Player::~Player()
 {
-	//Render the player at given grid coords (may need to change the numbers to adjust for level grid)
-	mTexture.render(mPosX * 32, mPosY * 32, &clip);
+}
+
+class Enemy : public Entity {
+
+public:
+	Enemy();
+
+	Enemy(int x, int y);
+
+	~Enemy();
+
+	void loadEnemyMedia() {
+		//Load media specifically used by the enemies
+		//loadMedia("enemySpriteSheetTransparent.png");
+
+		loadMedia("enemySpriteSheetTransparent.png");
+	}
+
+	std::string echo() { return "Enemy"; }
+};
+
+inline Enemy::Enemy() :Entity() {}
+
+inline Enemy::Enemy(int x, int y) : Entity(x, y) {}
+
+inline Enemy::~Enemy()
+{
 }
