@@ -12,11 +12,12 @@
 //Wrapped texture class 
 #include "WTexture.h"
 
-//Player character
-#include "player.h"
+//Objects
+#include "entity.h"
+#include "tile.h"
 
-//Walls
-#include "wall.h"
+//Level map (experimantal)
+#include "levelMap.h"
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -51,7 +52,7 @@ bool init()
     else
     {
         //Create window
-		gWindow = SDL_CreateWindow("TrialTower v0.0.0.0.2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		gWindow = SDL_CreateWindow("TrialTower v0.0.0.0.3", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 		if (gWindow == NULL)
 		{
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -131,50 +132,29 @@ int main(int argc, char* args[])
 			SDL_Event e;
 
 			//Player character
-			Player player(2, 2);
-			player.setRenderer(gRenderer);
-			player.loadPlayerMedia();
+			Player player(2, 2, gRenderer);
 
-			Enemy* enemy1 = new Enemy(10, 5);
-			enemy1->setRenderer(gRenderer);
-			enemy1->loadEnemyMedia();
-			Enemy* enemy2 = new Enemy(7, 7);
-			enemy2->setRenderer(gRenderer);
-			enemy2->loadEnemyMedia();
+			//Enemies
+			Enemy* enemy1 = new Enemy(10, 5, gRenderer);
+			Enemy* enemy2 = new Enemy(7, 7, gRenderer);
 
-			Wall sampleWall;
-			sampleWall.setRenderer(gRenderer);
-			sampleWall.loadMedia();
-
-			Portal portal;
-			portal.setRenderer(gRenderer);
-			portal.loadMedia();
-
-			std::vector< std::vector<int> > wallMap;
 			std::vector< Entity* > enemyList;
 			enemyList.resize(2);
 			enemyList[0] = enemy1;
 			enemyList[1] = enemy2;
 
-			wallMap.resize(SCREEN_WIDTH / TILE_SIZE);
-			for (int i = 0; i < wallMap.size(); i++) {
-				wallMap[i].resize(SCREEN_HEIGHT / TILE_SIZE);
-			}
+			LevelMap lvlMap(SCREEN_WIDTH / TILE_SIZE, SCREEN_HEIGHT / TILE_SIZE);
+			lvlMap.insertObj(new Wall(0, 3, gRenderer));
+			lvlMap.insertObj(new Wall(1, 4, gRenderer));
+			lvlMap.insertObj(new Wall(2, 3, gRenderer));
+			lvlMap.insertObj(new Wall(3, 3, gRenderer));
+			lvlMap.insertObj(new Wall(3, 1, gRenderer));
+			lvlMap.insertObj(new Wall(3, 0, gRenderer));
+			lvlMap.insertObj(new Wall(4, 5, gRenderer));
+			lvlMap.insertObj(new Wall(7, 6, gRenderer));
 
-			for (int i = 0; i < wallMap.size(); i++) {
-				for (int j = 0; j < wallMap[i].size(); j++) {
-					wallMap[i][j] = 0;
-				}
-			}
-			
-			wallMap[3][3] = 1;
-			wallMap[6][7] = 1;
-			wallMap[4][5] = 1;
-
-			wallMap[7][7] = 2;
-			wallMap[10][5] = 2;
-
-			wallMap[14][10] = 3;
+			Portal* portal = new Portal(14, 10, gRenderer);
+			lvlMap.insertObj(portal);
 
 			//std::wcout << "---------------path------------------" << std::endl;
 			//std::wcout << ExePath() << std::endl;
@@ -198,19 +178,19 @@ int main(int argc, char* args[])
 						switch (e.key.keysym.sym)
 						{
 						case SDLK_UP:
-							player.move(DIRECTION_UP, wallMap, enemyList);
+							player.move(DIRECTION_UP, lvlMap, enemyList, portal);
 							break;
 
 						case SDLK_DOWN:
-							player.move(DIRECTION_DOWN, wallMap, enemyList);
+							player.move(DIRECTION_DOWN, lvlMap, enemyList, portal);
 							break;
 
 						case SDLK_LEFT:
-							player.move(DIRECTION_LEFT, wallMap, enemyList);
+							player.move(DIRECTION_LEFT, lvlMap, enemyList, portal);
 							break;
 
 						case SDLK_RIGHT:
-							player.move(DIRECTION_RIGHT, wallMap, enemyList);
+							player.move(DIRECTION_RIGHT, lvlMap, enemyList, portal);
 							break;
 
 						default:
@@ -223,27 +203,28 @@ int main(int argc, char* args[])
                 SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
                 SDL_RenderClear(gRenderer);
 
-				for (int i = 0; i < wallMap.size(); i++) {
-					for (int j = 0; j < wallMap[i].size(); j++) {
-						if (wallMap[i][j] == 1) { sampleWall.render(i, j); }
-						if (enemyList[0] != nullptr) { enemy1->render(); }
-						if (enemyList[1] != nullptr) { enemy2->render(); }
-						if (wallMap[i][j] == 3){
-							if (player.getX() == i && player.getY() == j) {
-								if (enemyList[0] != nullptr || enemyList[1] != nullptr) {
-									portal.render(i, j, true);
-								} else {
-									std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
-									quit = true;
-								}
-							}
-							else {
-								portal.render(i, j);
-							}
-						}
-					}
+				
+
+				if (portal->isFinished()) {
+					std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
+					quit = true;
 				}
 
+				//Render the map
+				lvlMap.renderAll();
+
+				//Render all remaining enemies
+				for (int i = 0; i < enemyList.size(); i++) {
+					if (enemyList[i] != nullptr) {
+						enemyList[i]->render();
+					}
+				}
+				
+				if (player.getX() == portal->getX() && player.getY() == portal->getY() && quit == false) {
+					portal->renderText(portal->getX(), portal->getY());
+				}
+
+				//Render the player
 				player.render();
              
 				//Update screen (must be after rendering everything prior!!!)
