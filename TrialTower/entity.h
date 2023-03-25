@@ -39,8 +39,6 @@ public:
 	//Entity destructor
 	~Entity();
 
-	//Movement handler
-	void move(int direction, LevelMap& wallMap, std::vector< Entity* >& enemyList, Portal* endPortal);
 
 };
 
@@ -57,7 +55,35 @@ inline Entity::~Entity()
 
 }
 
-inline void Entity::move(int direction, LevelMap& wallMap, std::vector< Entity* >& enemyList, Portal* endPortal)
+class Player : public Entity {
+
+public:
+	Player();
+
+	Player(int x, int y, SDL_Renderer* renderPtr);
+
+	~Player();
+
+	void loadPlayerMedia() {
+		//Load media specifically used by the player
+		loadMedia("playerSpriteSheetTransparent.png");
+	}
+
+	std::string echo() { return "Player"; }
+
+	//Movement handler
+	void move(int direction, LevelMap& wallMap, std::vector< Entity* >& enemyList, Portal* endPortal);
+};
+
+inline Player::Player():Entity(){}
+
+inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia(); }
+
+inline Player::~Player()
+{
+}
+
+inline void Player::move(int direction, LevelMap& wallMap, std::vector< Entity* >& enemyList, Portal* endPortal)
 {
 	//Set clip square to entity's current direction (use case if irregular sprite sizes)
 	setClip(direction, 0);
@@ -82,10 +108,10 @@ inline void Entity::move(int direction, LevelMap& wallMap, std::vector< Entity* 
 			if (nextY >= 0 && wallMap.getObj(nextX, nextY) == nullptr) { setY(nextY); }
 			else if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
 				setY(nextY); bool finished = true;
-				for(int i = 0; i < enemyList.size(); i++) {
+				for (int i = 0; i < enemyList.size(); i++) {
 					if (enemyList[i] != nullptr) {
 						finished = false;
-					}	
+					}
 				}
 				if (!finished) {
 					endPortal->renderText(nextX, nextY);
@@ -133,7 +159,7 @@ inline void Entity::move(int direction, LevelMap& wallMap, std::vector< Entity* 
 		}
 		if (!actionTaken) {
 			if (nextY < wallMap.getYSize() && wallMap.getObj(nextX, nextY) == nullptr) { setY(nextY); }
-			else if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "Portal") { 
+			else if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "Portal") {
 				setY(nextY); bool finished = true;
 				for (int i = 0; i < enemyList.size(); i++) {
 					if (enemyList[i] != nullptr) {
@@ -159,7 +185,7 @@ inline void Entity::move(int direction, LevelMap& wallMap, std::vector< Entity* 
 		}
 		if (!actionTaken) {
 			if (nextX >= 0 && wallMap.getObj(nextX, nextY) == nullptr) { setX(nextX); }
-			else if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") { 
+			else if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
 				setX(nextX); bool finished = true;
 				for (int i = 0; i < enemyList.size(); i++) {
 					if (enemyList[i] != nullptr) {
@@ -180,31 +206,6 @@ inline void Entity::move(int direction, LevelMap& wallMap, std::vector< Entity* 
 	}
 }
 
-
-class Player : public Entity {
-
-public:
-	Player();
-
-	Player(int x, int y, SDL_Renderer* renderPtr);
-
-	~Player();
-
-	void loadPlayerMedia() {
-		//Load media specifically used by the player
-		loadMedia("playerSpriteSheetTransparent.png");
-	}
-
-	std::string echo() { return "Player"; }
-};
-
-inline Player::Player():Entity(){}
-
-inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia(); }
-
-inline Player::~Player()
-{
-}
 
 class Enemy : public Entity {
 

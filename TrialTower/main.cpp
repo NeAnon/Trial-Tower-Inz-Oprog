@@ -203,20 +203,28 @@ int main(int argc, char* args[])
                 SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
                 SDL_RenderClear(gRenderer);
 
-				for (int i = 0; i < enemyList.size(); i++) {
-					if (enemyList[i] != nullptr) {
-						enemyList[i]->render();
-					}
-				}
+				
 
 				if (portal->isFinished()) {
 					std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
 					quit = true;
 				}
 
-
+				//Render the map
 				lvlMap.renderAll();
 
+				//Render all remaining enemies
+				for (int i = 0; i < enemyList.size(); i++) {
+					if (enemyList[i] != nullptr) {
+						enemyList[i]->render();
+					}
+				}
+				
+				if (player.getX() == portal->getX() && player.getY() == portal->getY() && quit == false) {
+					portal->renderText(portal->getX(), portal->getY());
+				}
+
+				//Render the player
 				player.render();
              
 				//Update screen (must be after rendering everything prior!!!)
