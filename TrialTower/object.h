@@ -1,3 +1,5 @@
+#pragma once
+
 //Base includes
 #include <SDL.h>
 #include <SDL_image.h>
@@ -21,6 +23,8 @@ public:
 	Object();
 
 	Object(int x, int y);
+
+	Object(int x, int y, SDL_Renderer* renderPtr);
 
 	~Object();
 
@@ -68,6 +72,17 @@ inline Object::Object(int x, int y)
 
 	//Set entity position (specified as grid params)
 	mPosX = x; mPosY = y;
+}
+
+inline Object::Object(int x, int y, SDL_Renderer* renderPtr)
+{
+	//Set dimensions of entity's sprites
+	clip = { 0, 0, 32, 32 };
+
+	//Set entity position (specified as grid params)
+	mPosX = x; mPosY = y;
+
+	mTexture.setRenderer(renderPtr);
 }
 
 inline Object::~Object()
