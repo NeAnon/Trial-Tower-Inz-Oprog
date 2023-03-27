@@ -14,6 +14,7 @@ enum {
 class LevelMap {
 private:
 	std::vector< std::vector< Tile* > > map;
+	bool hasPortal; int portalX; int portalY; Portal* portalPtr;
 public:
 	LevelMap();
 
@@ -21,20 +22,28 @@ public:
 
 	~LevelMap();
 
+	void remakeLevel(int x, int y);
+
 	void insertObj(Tile* obj);
+	void insertPortal(Portal* obj);
 	Tile* getObj(int x, int y);
 	std::string echoObj(int x, int y);
 
 	int getXSize() { return map.size(); }
 	int getYSize() { return map[0].size(); }
 
+	bool portalExists() { return hasPortal; }
+	int getPortalX()	{ return portalX; }
+	int getPortalY()	{ return portalY; }
+	Portal* getPortalPtr() { return portalPtr; }
+
 	void renderAll();
 };
 
 LevelMap::LevelMap() {
-	map.resize(16);
+	map.resize(10);
 	for (int i = 0; i < map.size(); i++) {
-		map[i].resize(16);
+		map[i].resize(10);
 	}
 
 	for (int i = 0; i < map.size(); i++) {
@@ -71,9 +80,53 @@ inline LevelMap::~LevelMap()
 	}
 }
 
+inline void LevelMap::remakeLevel(int x, int y)
+{
+	//Delete existing level
+	for (int i = 0; i < map.size(); i++) {
+		for (int j = 0; j < map[i].size(); j++) {
+			if (map[i][j] != nullptr) {
+				//std::cout << "Deleting " << map[i][j]->echo() << '\n';
+				delete map[i][j];
+				map[i][j] = nullptr;
+			}
+		}
+	}
+
+	hasPortal = false;
+
+	//Resize to new, blank level
+	map.resize(x);
+	for (int i = 0; i < map.size(); i++) {
+		map[i].resize(y);
+	}
+
+	for (int i = 0; i < map.size(); i++) {
+		for (int j = 0; j < map[i].size(); j++) {
+			map[i][j] = nullptr;
+		}
+	}
+}
+
 inline void LevelMap::insertObj(Tile* obj)
 {
+	if (echoObj(obj->getX(), obj->getY()) != "Empty") {
+		delete map[obj->getX()][obj->getY()];
+	}
 	map[obj->getX()][obj->getY()] = obj;
+}
+
+inline void LevelMap::insertPortal(Portal* obj)
+{
+	insertObj(obj);
+	if (hasPortal) {
+		delete map[portalX][portalY];
+		map[portalX][portalY] = nullptr;
+	}
+	portalX = obj->getX();
+	portalY = obj->getY();
+	hasPortal = true;
+	portalPtr = obj;
 }
 
 inline Tile* LevelMap::getObj(int x, int y)

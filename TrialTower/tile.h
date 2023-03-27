@@ -25,7 +25,7 @@ public:
 
 	~Tile();
 
-	virtual void renderText(int posX, int posY) = 0;
+	virtual void renderText(int posX, int posY, int screenW, int screenY) = 0;
 };
 
 Tile::Tile() : Object() {
@@ -65,7 +65,7 @@ public:
 
 	void setPos(int x, int y) { setX(x); setY(y); }
 
-	void renderText(int x, int y) {};
+	void renderText(int x, int y, int screenW, int screenY) {};
 };
 
 inline Wall::Wall()
@@ -115,7 +115,7 @@ public:
 	}
 
 	//Renders the portal's text at its position
-	void renderText(int posX, int posY);
+	void renderText(int posX, int posY, int screenW, int screenY);
 
 	std::string echo() { return "Portal"; }
 
@@ -141,7 +141,30 @@ inline Portal::~Portal()
 	mText.free();
 }
 
-inline void Portal::renderText(int posX, int posY)
+
+inline void Portal::renderText(int posX, int posY, int screenW, int screenY)
+//posX, posY refer to the portal position within the map
 {
-	mText.render(posX * TILE_SIZE - (mText.getWidth()*3 / 8), posY * TILE_SIZE - mText.getHeight());
+	int renderX = 0; int renderY = 0;
+	
+	//portalX/portalY refer to the rendered top-left anchors of portals 
+	int portalX = posX * TILE_SIZE; int portalY = posY * TILE_SIZE;
+
+	//X-position on screen required for centering the text
+	int centeredTextX = 3* mText.getWidth() / 8;
+
+	//Assign X pos
+	if ((portalX - centeredTextX) < 0) { renderX = 0; }
+	else if ((portalX - centeredTextX + mText.getWidth()) > screenY) { renderX = posX * TILE_SIZE - mText.getWidth() + TILE_SIZE; }
+	else { renderX = portalX - centeredTextX; }
+	
+	//Assign Y pos (default above portal)
+	if (portalY - mText.getHeight() > 0) {
+		renderY = portalY - mText.getHeight();
+	}
+	else {
+		renderY = portalY + TILE_SIZE;
+	}
+	//Render text at decided pos
+	mText.render(renderX, renderY);
 }

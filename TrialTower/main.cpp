@@ -15,9 +15,12 @@
 //Objects
 #include "entity.h"
 #include "tile.h"
+#include "player.h"
 
-//Level map (experimantal)
+//Mapping
 #include "levelMap.h"
+#include "enemy.h"
+#include "levelParser.h"
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -52,7 +55,7 @@ bool init()
     else
     {
         //Create window
-		gWindow = SDL_CreateWindow("TrialTower v0.0.0.0.3", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		gWindow = SDL_CreateWindow("TrialTower v0.0.0.0.5", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 		if (gWindow == NULL)
 		{
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -134,16 +137,29 @@ int main(int argc, char* args[])
 			//Player character
 			Player player(2, 2, gRenderer);
 
+			enemyList eList;
+			eList.setRenderer(gRenderer);
+
+			LevelMap lvlMap;
+
+			parseLevel("levels/level1.lvl", player, lvlMap, eList, gRenderer);
+
+			eList.reloadMedia();
+			
 			//Enemies
-			Enemy* enemy1 = new Enemy(10, 5, gRenderer);
-			Enemy* enemy2 = new Enemy(7, 7, gRenderer);
+		//	Enemy* enemy1 = new Enemy(10, 5, gRenderer);
+		//	Enemy* enemy2 = new Enemy(7, 7, gRenderer);
+			/*
+			eList.addEnemy(10, 5);
+			eList.addEnemy(7, 7, "Slide", 1);
+			eList.addEnemy(9, 11, "Wander");
+			eList.addEnemy(0, 0, "Slide", DIRECTION_LEFT);
+			eList.addEnemy(1, 12, "Wander");
 
-			std::vector< Entity* > enemyList;
-			enemyList.resize(2);
-			enemyList[0] = enemy1;
-			enemyList[1] = enemy2;
 
-			LevelMap lvlMap(SCREEN_WIDTH / TILE_SIZE, SCREEN_HEIGHT / TILE_SIZE);
+		//	enemyList.resize(2);
+		//	enemyList[0] = enemy1;
+		//	enemyList[1] = enemy2;
 			lvlMap.insertObj(new Wall(0, 3, gRenderer));
 			lvlMap.insertObj(new Wall(1, 4, gRenderer));
 			lvlMap.insertObj(new Wall(2, 3, gRenderer));
@@ -152,13 +168,14 @@ int main(int argc, char* args[])
 			lvlMap.insertObj(new Wall(3, 0, gRenderer));
 			lvlMap.insertObj(new Wall(4, 5, gRenderer));
 			lvlMap.insertObj(new Wall(7, 6, gRenderer));
-
-			Portal* portal = new Portal(14, 10, gRenderer);
 			lvlMap.insertObj(portal);
 
 			//std::wcout << "---------------path------------------" << std::endl;
 			//std::wcout << ExePath() << std::endl;
 			//std::wcout << "---------------path------------------" << std::endl;
+			*/
+
+			Portal* portal = lvlMap.getPortalPtr();
 
 			//While the application is running...
             while (!quit)
@@ -178,19 +195,23 @@ int main(int argc, char* args[])
 						switch (e.key.keysym.sym)
 						{
 						case SDLK_UP:
-							player.move(DIRECTION_UP, lvlMap, enemyList, portal);
+							player.move(DIRECTION_UP, lvlMap, eList, portal);
+							eList.moveAll(lvlMap);
 							break;
 
 						case SDLK_DOWN:
-							player.move(DIRECTION_DOWN, lvlMap, enemyList, portal);
+							player.move(DIRECTION_DOWN, lvlMap, eList, portal);
+							eList.moveAll(lvlMap);
 							break;
 
 						case SDLK_LEFT:
-							player.move(DIRECTION_LEFT, lvlMap, enemyList, portal);
+							player.move(DIRECTION_LEFT, lvlMap, eList, portal);
+							eList.moveAll(lvlMap);
 							break;
 
 						case SDLK_RIGHT:
-							player.move(DIRECTION_RIGHT, lvlMap, enemyList, portal);
+							player.move(DIRECTION_RIGHT, lvlMap, eList, portal);
+							eList.moveAll(lvlMap);
 							break;
 
 						default:
@@ -214,14 +235,10 @@ int main(int argc, char* args[])
 				lvlMap.renderAll();
 
 				//Render all remaining enemies
-				for (int i = 0; i < enemyList.size(); i++) {
-					if (enemyList[i] != nullptr) {
-						enemyList[i]->render();
-					}
-				}
+				eList.renderAll();
 				
 				if (player.getX() == portal->getX() && player.getY() == portal->getY() && quit == false) {
-					portal->renderText(portal->getX(), portal->getY());
+					portal->renderText(portal->getX(), portal->getY(), SCREEN_WIDTH, SCREEN_HEIGHT);
 				}
 
 				//Render the player
@@ -230,8 +247,6 @@ int main(int argc, char* args[])
 				//Update screen (must be after rendering everything prior!!!)
                 SDL_RenderPresent(gRenderer);
 			}
-			if (enemyList[0] != nullptr) { delete enemyList[0]; }
-			if (enemyList[1] != nullptr) { delete enemyList[1]; }
 		}
 	}
 
