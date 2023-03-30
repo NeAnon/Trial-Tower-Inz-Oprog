@@ -82,8 +82,8 @@ public:
 
 	std::string echo() { return "Enemy"; }
 
-	virtual int next_move(LevelMap& wallMap) = 0;//Direction of next move (function of movement logic)
-	virtual void move(int direction) = 0;
+	virtual int next_move(LevelMap& wallMap, int playerX, int playerY) = 0;//Direction of next move (function of movement logic)
+	virtual void move(int direction, int& dmgCounter, int playerX, int playerY) = 0;
 };
 
 inline Enemy::Enemy() : Entity() {

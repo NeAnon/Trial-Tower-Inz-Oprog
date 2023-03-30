@@ -142,7 +142,7 @@ int main(int argc, char* args[])
 
 			LevelMap lvlMap;
 
-			parseLevel("levels/level1.lvl", player, lvlMap, eList, gRenderer);
+			parseLevel("levels/sampleLevel.lvl", player, lvlMap, eList, gRenderer);
 
 			eList.reloadMedia();
 			
@@ -191,27 +191,36 @@ int main(int argc, char* args[])
 					//User presses a key
 					else if (e.type == SDL_KEYDOWN)
 					{
+						int pDamageAcc = 0;
 						//Move player based on key press
 						switch (e.key.keysym.sym)
 						{
 						case SDLK_UP:
 							player.move(DIRECTION_UP, lvlMap, eList, portal);
-							eList.moveAll(lvlMap);
+							eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+							player.hurt(pDamageAcc);
+							if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
 							break;
 
 						case SDLK_DOWN:
 							player.move(DIRECTION_DOWN, lvlMap, eList, portal);
-							eList.moveAll(lvlMap);
+							eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+							player.hurt(pDamageAcc);
+							if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
 							break;
 
 						case SDLK_LEFT:
 							player.move(DIRECTION_LEFT, lvlMap, eList, portal);
-							eList.moveAll(lvlMap);
+							eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+							player.hurt(pDamageAcc);
+							if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
 							break;
 
 						case SDLK_RIGHT:
 							player.move(DIRECTION_RIGHT, lvlMap, eList, portal);
-							eList.moveAll(lvlMap);
+							eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+							player.hurt(pDamageAcc);
+							if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
 							break;
 
 						default:
@@ -242,7 +251,13 @@ int main(int argc, char* args[])
 				}
 
 				//Render the player
-				player.render();
+				if (player.isAlive()) {
+					player.render();
+				}
+				else {
+					quit = true;
+					std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
+				}
              
 				//Update screen (must be after rendering everything prior!!!)
                 SDL_RenderPresent(gRenderer);

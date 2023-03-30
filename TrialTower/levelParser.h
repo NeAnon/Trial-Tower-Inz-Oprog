@@ -24,7 +24,7 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 	//std::cout << "ySize read: " << buf << "\n";
 	ySize = std::stoi(buf);
 
-	std::cout << "X: " << xSize << " Y: " << ySize << "\n\n";
+	//std::cout << "X: " << xSize << " Y: " << ySize << "\n\n";
 
 	lvlMap.remakeLevel(xSize, ySize);
 

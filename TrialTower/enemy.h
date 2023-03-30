@@ -30,8 +30,8 @@ public:
 	inline enemyGeneric(int x, int y, SDL_Renderer* renderPtr = nullptr) : Enemy(x, y, renderPtr) {}
 	inline ~enemyGeneric() {}
 
-	int next_move(LevelMap& wallMap) { return 0; }
-	void move(int direction) {}
+	int next_move(LevelMap& wallMap, int playerX, int playerY) { return 0; }
+	void move(int direction, int& dmgCounter, int playerX, int playerY) {}
 };
 
 class enemySlide : public Enemy {
@@ -47,7 +47,7 @@ public:
 
 	void swapDirection() { mDirection = ((mDirection + 1) % 4) + 1;}
 
-	int next_move(LevelMap& wallMap) {
+	int next_move(LevelMap& wallMap, int playerX, int playerY) {
 		switch (mDirection) {
 		case DIRECTION_UP:
 			if (getY() == 0 || wallMap.echoObj(getX(), getY() - 1) == "Wall") { swapDirection(); return 0;}
@@ -70,32 +70,62 @@ public:
 		return mDirection;
 	}
 	
-	void move(int direction) {
+	void move(int direction, int& dmgCounter, int playerX, int playerY) {
 		//Set clip square to entity's current direction (use case if irregular sprite sizes)
 		setClip(direction, 0);
 
 		int nextX = getX();
 		int nextY = getY();
 
+		bool actionTaken = false;	int atkVal = 10;
+
 		switch (direction) {
 		case DIRECTION_UP:
 			nextY--;
-			setX(nextX); setY(nextY);
+			if (nextX == playerX && nextY == playerY) {
+				dmgCounter += atkVal;
+				actionTaken = true;
+			}
+			if (!actionTaken)
+			{
+				setX(nextX); setY(nextY);
+			}
 			break;
 
 		case DIRECTION_RIGHT:
 			nextX++;
-			setX(nextX); setY(nextY);
+			if (nextX == playerX && nextY == playerY) {
+				dmgCounter += atkVal;
+				actionTaken = true;
+			}
+			if (!actionTaken)
+			{
+				setX(nextX); setY(nextY);
+			}
 			break;
 
 		case DIRECTION_DOWN:
 			nextY++;
-			setX(nextX); setY(nextY);
+			if (nextX == playerX && nextY == playerY) {
+				dmgCounter += atkVal;
+				actionTaken = true;
+			}
+			if (!actionTaken)
+			{
+				setX(nextX); setY(nextY);
+			}
 			break;
 
 		case DIRECTION_LEFT:
 			nextX--;
-			setX(nextX); setY(nextY);
+			if (nextX == playerX && nextY == playerY) {
+				dmgCounter += atkVal;
+				actionTaken = true;
+			}
+			if (!actionTaken)
+			{
+				setX(nextX); setY(nextY);
+			}
 			break;
 		default:
 			break;
@@ -113,7 +143,7 @@ public:
 		loadMedia("enemyWanderSheet.png");
 	}
 
-	int next_move(LevelMap& wallMap) {
+	int next_move(LevelMap& wallMap, int playerX, int playerY) {
 		directions.clear();
 
 		if (getY() - 1 >= 0 && wallMap.echoObj(getX(), getY() - 1) != "Wall") { directions.push_back(DIRECTION_UP); }
@@ -130,32 +160,62 @@ public:
 		}
 	}
 
-	void move(int direction) {
+	void move(int direction, int& dmgCounter, int playerX, int playerY) {
 		//Set clip square to entity's current direction (use case if irregular sprite sizes)
 		setClip(direction, 0);
 
 		int nextX = getX();
 		int nextY = getY();
 
+		bool actionTaken = false;	int atkVal = 10;
+
 		switch (direction) {
 		case DIRECTION_UP:
 			nextY--;
-			setX(nextX); setY(nextY);
+			if (nextX == playerX && nextY == playerY) {
+				dmgCounter += atkVal;
+				actionTaken = true;
+			}
+			if(!actionTaken)
+			{
+				setX(nextX); setY(nextY);
+			}
 			break;
 
 		case DIRECTION_RIGHT:
 			nextX++;
-			setX(nextX); setY(nextY);
+			if (nextX == playerX && nextY == playerY) {
+				dmgCounter += atkVal;
+				actionTaken = true;
+			}
+			if (!actionTaken)
+			{
+				setX(nextX); setY(nextY);
+			}
 			break;
 
 		case DIRECTION_DOWN:
 			nextY++;
-			setX(nextX); setY(nextY);
+			if (nextX == playerX && nextY == playerY) {
+				dmgCounter += atkVal;
+				actionTaken = true;
+			}
+			if (!actionTaken)
+			{
+				setX(nextX); setY(nextY);
+			}
 			break;
 
 		case DIRECTION_LEFT:
 			nextX--;
-			setX(nextX); setY(nextY);
+			if (nextX == playerX && nextY == playerY) {
+				dmgCounter += atkVal;
+				actionTaken = true;
+			}
+			if (!actionTaken)
+			{
+				setX(nextX); setY(nextY);
+			}
 			break;
 		default:
 			break;
@@ -187,7 +247,7 @@ public:
 
 	void renderAll();
 
-	void moveAll(LevelMap& map);
+	void moveAll(LevelMap& map, int& dmgCounter, int playerX, int playerY);
 };
 
 //If you're putting over 1000 enemies into a single level, you have a problem
@@ -267,10 +327,10 @@ inline void enemyList::renderAll() {
 	}
 }
 
-inline void enemyList::moveAll(LevelMap& map) {
+inline void enemyList::moveAll(LevelMap& map, int& dmgCounter, int playerX, int playerY) {
 	for (int i = 0; i < list.size(); i++) {
 		if (list[i] != nullptr) {
-			list[i]->move(list[i]->next_move(map));
+			list[i]->move(list[i]->next_move(map, playerX, playerY), dmgCounter, playerX, playerY);
 		}
 	}
 }
