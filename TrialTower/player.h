@@ -7,99 +7,136 @@
 #include <string>
 #include <vector>
 
-//Wrapped texture class 
-#include "WTexture.h"
+//This file will contain different enemy types, which inherit from the base enemy class
+#include "entity.h"
+#include "enemy.h"
 
-//Wall handling
-#include "wall.h"
+//Entities will have to take into account map layout
+#include "levelMap.h"
 
 
-//Directionals corresponding to images on the sprite sheet
-enum {
-	DIRECTION_CENTER,	//0
-	DIRECTION_UP,		//1
-	DIRECTION_RIGHT,	//2
-	DIRECTION_DOWN,		//3
-	DIRECTION_LEFT,		//4
-};
-
-class Player {
-private:
-	//Player texture and current sprite
-	WTexture mTexture;
-	SDL_Rect clip;
-
-	//Player position (in tiles)
-	int mPosX;
-	int mPosY;
+class Player : public Entity {
 
 public:
-	//Player contructor
 	Player();
 
-	//Player destructor
+	Player(int x, int y, SDL_Renderer* renderPtr);
+
 	~Player();
 
-	//Sets renderer for own texture
-	void setPlayerRenderer(SDL_Renderer* renderPtr) { mTexture.setRenderer(renderPtr); }
-
-	//Load any media required to display the player
-	void loadPlayerMedia()
-	{
-		//Load player texture	
-		if (!mTexture.loadFromFile("resources/playerSpriteSheetTransparent.png"))
-		{
-			printf("Failed to load player texture!\n");
-		}
+	void loadPlayerMedia() {
+		//Load media specifically used by the player
+		loadMedia("playerSpriteSheetTransparent.png");
 	}
 
-	//Movement handler
-	void move(int direction, std::vector<std::vector<int> > &wallMap);
+	std::string echo() { return "Player"; }
 
-	//Renders the player at their position
-	void render();
+	//Movement handler
+	void move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal);
 };
 
-inline Player::Player() {
-	//Set dimensions of player's sprites
-	clip = { 0, 0, 32, 32 };
+inline Player::Player() :Entity() {}
 
-	//Set player position (specified as grid params)
-	mPosX = 1; mPosY = 1;
-}
+inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia(); }
 
 inline Player::~Player()
 {
-	//Deallocate stored texture to avoid memory leakage
-	mTexture.free();
 }
 
-inline void Player::move(int direction, std::vector<std::vector<int> > &wallMap)
+inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal)
 {
-	//Set clip square to player's current direction (use case if irregular sprite sizes)
-	clip.x = direction * 32;
-	
-	//Depending on direction pressed, if within boundaries and not about to run into a wall, move the player
+	//Set clip square to entity's current direction (use case if irregular sprite sizes)
+	setClip(direction, 0);
+
+	int nextX = getX();
+	int nextY = getY();
+
+	bool actionTaken = false;
+
+	//Depending on direction chosen, if within boundaries and not about to run into a wall, move the entity
 	switch (direction) {
 	case DIRECTION_UP:
-		if ((mPosY - 1 >= 0) && wallMap[mPosX][mPosY - 1] == 0) { mPosY--; }
+		nextY--;
+		//Check for enemies
+		if (list.isAt(nextX, nextY)) {
+			list.attackSelected();
+			actionTaken = true;
+		}
+		if (!actionTaken) {
+			if (nextY >= 0 && wallMap.getObj(nextX, nextY) == nullptr) { setY(nextY); }
+			else if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
+				setY(nextY); bool finished = true;
+				if (list.enemiesLeft() > 0) {
+					finished = false;
+				}
+				if (finished) {
+					endPortal->setFinishState(finished);
+				}
+			}
+		}
 		break;
 	case DIRECTION_RIGHT:
-		if ((mPosX + 1 < wallMap.size()) && wallMap[mPosX + 1][mPosY] == 0) { mPosX++; }
+		nextX++;
+		//Check for enemies
+		if (list.isAt(nextX, nextY)) {
+			list.attackSelected();
+			actionTaken = true;
+		}
+		if (!actionTaken) {
+			if (nextX < wallMap.getXSize() && wallMap.getObj(nextX, nextY) == nullptr) { setX(nextX); }
+			else if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "Portal") {
+				setX(nextX); bool finished = true;
+				if (list.enemiesLeft() > 0) {
+					finished = false;
+				}
+				if (finished) {
+					endPortal->setFinishState(finished);
+				}
+			}
+		}
 		break;
 	case DIRECTION_DOWN:
-		if ((mPosY + 1 < wallMap[mPosX].size()) && wallMap[mPosX][mPosY + 1] == 0) { mPosY++; }
+		nextY++;
+		//Check for enemies
+		//Check for enemies
+		if (list.isAt(nextX, nextY)) {
+			list.attackSelected();
+			actionTaken = true;
+		}
+		if (!actionTaken) {
+			if (nextY < wallMap.getYSize() && wallMap.getObj(nextX, nextY) == nullptr) { setY(nextY); }
+			else if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "Portal") {
+				setY(nextY); bool finished = true;
+				if (list.enemiesLeft() > 0) {
+					finished = false;
+				}
+				if (finished) {
+					endPortal->setFinishState(finished);
+				}
+			}
+		}
 		break;
 	case DIRECTION_LEFT:
-		if ((mPosX - 1 >= 0) && wallMap[mPosX-1][mPosY] == 0) { mPosX--; } 
+		nextX--;
+		//Check for enemies
+		if (list.isAt(nextX, nextY)) {
+			list.attackSelected();
+			actionTaken = true;
+		}
+		if (!actionTaken) {
+			if (nextX >= 0 && wallMap.getObj(nextX, nextY) == nullptr) { setX(nextX); }
+			else if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
+				setX(nextX); bool finished = true;
+				if (list.enemiesLeft() > 0) {
+					finished = false;
+				}
+				if (finished) {
+					endPortal->setFinishState(finished);
+				}
+			}
+		}
 		break;
 	default:
 		break;
 	}
-}
-
-inline void Player::render()
-{
-	//Render the player at given grid coords (may need to change the numbers to adjust for level grid)
-	mTexture.render(mPosX * 32, mPosY * 32, &clip);
 }
