@@ -16,7 +16,7 @@
 
 
 class Player : public Entity {
-
+	int hitPts; int damageDealt;
 public:
 	Player();
 
@@ -31,13 +31,17 @@ public:
 
 	std::string echo() { return "Player"; }
 
+	void hurt(int damage) { hitPts -= damage; }
+	bool isAlive() { return hitPts > 0; }
+	int getHP() { return hitPts; }
+
 	//Movement handler
 	void move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal);
 };
 
-inline Player::Player() :Entity() {}
+inline Player::Player() :Entity() { hitPts = 100; }
 
-inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia(); }
+inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia(); hitPts = 100; }
 
 inline Player::~Player()
 {
