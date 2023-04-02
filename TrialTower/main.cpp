@@ -22,9 +22,11 @@
 #include "enemy.h"
 #include "levelParser.h"
 
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+int GAME_WIDTH = 640;
+int GAME_HEIGHT = 480;
 
+int WINDOW_WIDTH = GAME_WIDTH;
+int WINDOW_HEIGHT = GAME_HEIGHT;
 
 //Starts up SDL and creates window
 bool init();
@@ -55,7 +57,7 @@ bool init()
     else
     {
         //Create window
-		gWindow = SDL_CreateWindow("TrialTower v0.0.0.0.5", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		gWindow = SDL_CreateWindow("TrialTower v0.0.0.0.5", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, GAME_WIDTH, GAME_HEIGHT, SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE);
 		if (gWindow == NULL)
 		{
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -134,6 +136,13 @@ int main(int argc, char* args[])
 			//Event handler
 			SDL_Event e;
 
+			//Set level and window sizes for WTexture to use
+			WTexture::setGlobalLSize(GAME_WIDTH, GAME_HEIGHT);
+			
+			WTexture::setGlobalWSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+			WTexture::calculate_renderRect();
+
 			//Player character
 			Player player(2, 2, gRenderer);
 
@@ -168,12 +177,12 @@ int main(int argc, char* args[])
 			lvlMap.insertObj(new Wall(3, 0, gRenderer));
 			lvlMap.insertObj(new Wall(4, 5, gRenderer));
 			lvlMap.insertObj(new Wall(7, 6, gRenderer));
-			lvlMap.insertObj(portal);
-
+			lvlMap.insertPortal(new Portal(1, 1, gRenderer));
+			*/
 			//std::wcout << "---------------path------------------" << std::endl;
 			//std::wcout << ExePath() << std::endl;
 			//std::wcout << "---------------path------------------" << std::endl;
-			*/
+			
 
 			Portal* portal = lvlMap.getPortalPtr();
 
@@ -188,6 +197,18 @@ int main(int argc, char* args[])
                     {
                         quit = true;
                     }
+					//User tries to resize the window
+					else if (e.type == SDL_WINDOWEVENT) {
+						if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
+							SDL_GetWindowSize(gWindow, &WINDOW_WIDTH, &WINDOW_HEIGHT);
+							std::cout << "New width: " << WINDOW_WIDTH << "\nNew height: " << WINDOW_HEIGHT << std::endl;
+							WTexture::setGlobalWSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+							WTexture::calculate_renderRect();
+
+							//Debug: callback the scale and offset to the renderer
+							WTexture::callback_renderrect();
+						}
+					}
 					//User presses a key
 					else if (e.type == SDL_KEYDOWN)
 					{
@@ -233,7 +254,6 @@ int main(int argc, char* args[])
                 SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
                 SDL_RenderClear(gRenderer);
 
-				
 
 				if (portal->isFinished()) {
 					std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
@@ -247,7 +267,7 @@ int main(int argc, char* args[])
 				eList.renderAll();
 				
 				if (player.getX() == portal->getX() && player.getY() == portal->getY() && quit == false) {
-					portal->renderText(portal->getX(), portal->getY(), SCREEN_WIDTH, SCREEN_HEIGHT);
+					portal->renderText(portal->getX(), portal->getY(), GAME_WIDTH, GAME_HEIGHT);
 				}
 
 				//Render the player
@@ -258,7 +278,10 @@ int main(int argc, char* args[])
 					quit = true;
 					std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
 				}
-             
+
+				//Outline everything that's rendered
+				WTexture::outlineAll(gRenderer);
+
 				//Update screen (must be after rendering everything prior!!!)
                 SDL_RenderPresent(gRenderer);
 			}

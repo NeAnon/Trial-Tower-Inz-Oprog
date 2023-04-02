@@ -3,51 +3,94 @@
 #include <SDL_image.h>
 #include <stdio.h>
 #include <string>
+#include <cmath>
+
+extern double upscale;
+extern int w_offset;
+extern int h_offset;
 
 class WTexture
 {
 private:
-    //The actual hardware texture being stored
-    SDL_Texture* mTexture;
+	//The actual hardware texture being stored
+	SDL_Texture* mTexture;
 
 	//The pointer to the window renderer
 	SDL_Renderer* mRendererPtr;
 
-    //Dimensions
-    int mWidth;
-    int mHeight;
+	//Dimensions
+	int mWidth;
+	int mHeight;
+
+	static int LEVEL_WIDTH;
+	static int LEVEL_HEIGHT;
+
+	static int WINDOW_WIDTH;
+	static int WINDOW_HEIGHT;
+	static double upscale;
+	static int w_offset;
+	static int h_offset;
 
 public:
-    //Initializes variables
-    WTexture();
+	//Initializes variables
+	WTexture();
 
-    //Deallocates memory
-    ~WTexture();
+	//Deallocates memory
+	~WTexture();
 
-    //Loads image from specified path
-    bool loadFromFile(std::string path);
+	//Loads image from specified path
+	bool loadFromFile(std::string path);
 
-    //Deallocates texture itself
-    void free();
+	//Deallocates texture itself
+	void free();
 
-    //Renders texture at given point, gives options for clipping from a sprite sheet, rotation, or flipping (just in case)
-    void render(int x, int y, SDL_Rect* clip = nullptr, double angle = 0.0, SDL_Point* center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE);
+	//Renders texture at given point, gives options for clipping from a sprite sheet, rotation, or flipping (just in case)
+	void render(int x, int y, SDL_Rect* clip = nullptr, double angle = 0.0, SDL_Point* center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE);
 
-    //Gets image dimensions
-    int getWidth();
-    int getHeight();
+	//Gets image dimensions
+	int getWidth();
+	int getHeight();
 
 	//Set target renderer (required, since we have no global one here)
 	void setRenderer(SDL_Renderer* renderPtr);
+
+	inline static void setGlobalLSize(int w,int h )	{ LEVEL_WIDTH = w; LEVEL_HEIGHT = h; }
+
+	inline static void setGlobalWSize(int w, int h)	{ WINDOW_WIDTH = w; WINDOW_HEIGHT = h; }
+
+	inline static void calculate_renderRect() {
+		//Find stretch vals needed for both dimensions to fit screen, and choose the smallest to be the stretch val (letterboxing > loss of render space)
+		double w_stretch = (WINDOW_WIDTH * 1.0) / LEVEL_WIDTH; double h_stretch = (WINDOW_HEIGHT * 1.0) / LEVEL_HEIGHT;
+		upscale = (w_stretch <= h_stretch ? w_stretch : h_stretch);
+		//std::cout << "Upscale value: " << upscale << "\n";
+
+		//Use upscale value to find centering offset
+		w_offset = (WINDOW_WIDTH - (LEVEL_WIDTH * upscale))/2; h_offset = (WINDOW_HEIGHT - (LEVEL_HEIGHT * upscale))/2;
+		//std::cout << "Width offset: " << w_offset << "\nHeight offset: " << h_offset << std::endl;
+	}
+
+	inline static void callback_renderrect() {
+		std::cout << "Scale: " << upscale << "\t\tWOffset: " << w_offset << "\t\t HOffset: " << h_offset << std::endl;
+	}
+
+	inline static void outlineAll(SDL_Renderer * renderPtr)
+	{
+		SDL_SetRenderDrawColor(renderPtr, 0xFF, 0xFF, 0xFF, 0xFF);
+
+		SDL_Rect levelOutline{ w_offset, h_offset, std::round(LEVEL_WIDTH * upscale), std::round(LEVEL_HEIGHT * upscale) };
+
+		SDL_RenderDrawRect(renderPtr, &levelOutline);
+	}
+
 };
 
-inline WTexture::WTexture() 
+inline WTexture::WTexture()
 {
-    //Initialize
-    mTexture = nullptr;
+	//Initialize
+	mTexture = nullptr;
 	mRendererPtr = nullptr;
-    mWidth = 0;
-    mHeight = 0;
+	mWidth = 0;
+	mHeight = 0;
 }
 
 inline WTexture::~WTexture()
@@ -111,14 +154,15 @@ inline void WTexture::free()
 
 inline void WTexture::render(int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip)
 {
+	//std::cout << "Upscale: " << upscale << "\t\tWOffset: " << w_offset << "\t\t HOffset: " << h_offset << std::endl;
 	//Set rendering space and render to screen
-	SDL_Rect renderQuad = { x, y, mWidth, mHeight };
+	SDL_Rect renderQuad = { std::round(x * upscale) + w_offset, std::round(y * upscale) + h_offset, std::round(mWidth * upscale), std::round(mHeight * upscale) };
 
 	//Set clip rendering dimensions
 	if (clip != nullptr)
 	{
-		renderQuad.w = clip->w;
-		renderQuad.h = clip->h;
+		renderQuad.w = std::round(clip->w * upscale);
+		renderQuad.h = std::round(clip->h * upscale);
 	}
 
 	//Render to screen
@@ -135,8 +179,18 @@ inline int WTexture::getHeight()
 	return mHeight;
 }
 
+
 inline void WTexture::setRenderer(SDL_Renderer* renderPtr)
 {
 	mRendererPtr = renderPtr;
 }
 
+int WTexture::LEVEL_WIDTH;
+int WTexture::LEVEL_HEIGHT;
+
+int WTexture::WINDOW_WIDTH;
+int WTexture::WINDOW_HEIGHT;
+
+double WTexture::upscale = 1;
+int WTexture::w_offset = 0;
+int WTexture::h_offset = 0;
