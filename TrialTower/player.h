@@ -144,3 +144,51 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		break;
 	}
 }
+
+class Interface {
+	//Player texture and current sprite
+	WTexture healthTexture;
+	WTexture healthTextureShadow;
+	SDL_Rect healthBarState;
+	SDL_Rect healthBarMissing;
+
+public:
+	Interface();
+	Interface(SDL_Renderer * renderPtr);
+
+	void loadInterface() {
+		//Load entity texture	
+		if (!healthTexture.loadFromFile("resources/healthbar.png"))
+		{
+			printf("Failed to load health bar texture! SDL_image Error: %s\n", IMG_GetError());
+		}
+		if (!healthTextureShadow.loadFromFile("resources/healthbarMissing.png"))
+		{
+			printf("Failed to load health bar texture! SDL_image Error: %s\n", IMG_GetError());
+		}
+	}
+
+	inline void render(int health, int maxHealth)
+	{
+		healthBarState.w = 32 + health * 96 / maxHealth;
+
+		//Render the entity at given grid coords (may need to change the numbers to adjust for level grid)
+		healthTextureShadow.render(0, WTexture::getGlobalLHeight(), &healthBarMissing);
+		healthTexture.render(0, WTexture::getGlobalLHeight(), &healthBarState);
+	}
+};
+
+Interface::Interface() {
+	//Set dimensions of object's sprites
+	healthBarState = { 0, 0, 128, 32 };
+	healthBarMissing = { 0, 0, 128, 32 };
+}
+
+inline Interface::Interface(SDL_Renderer* renderPtr)
+{
+	healthBarState = { 0, 0, 128, 32 };
+	healthBarMissing = { 0, 0, 128, 32 };
+
+	healthTexture.setRenderer(renderPtr);
+	healthTextureShadow.setRenderer(renderPtr);
+}

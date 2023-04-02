@@ -23,7 +23,7 @@
 #include "levelParser.h"
 
 int GAME_WIDTH = 640;
-int GAME_HEIGHT = 480;
+int GAME_HEIGHT = 512;
 
 int WINDOW_WIDTH = GAME_WIDTH;
 int WINDOW_HEIGHT = GAME_HEIGHT;
@@ -137,7 +137,7 @@ int main(int argc, char* args[])
 			SDL_Event e;
 
 			//Set level and window sizes for WTexture to use
-			WTexture::setGlobalLSize(GAME_WIDTH, GAME_HEIGHT);
+			WTexture::setGlobalLSize(0, 0);
 			
 			WTexture::setGlobalWSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -153,7 +153,14 @@ int main(int argc, char* args[])
 
 			parseLevel("levels/sampleLevel.lvl", player, lvlMap, eList, gRenderer);
 
+			//Set level size to level dims
+			WTexture::setGlobalLSize(lvlMap.getXSize() * 32, lvlMap.getYSize() * 32);
+			WTexture::calculate_renderRect();
+
 			eList.reloadMedia();
+
+			Interface HUD(gRenderer);
+			HUD.loadInterface();
 			
 			//Enemies
 		//	Enemy* enemy1 = new Enemy(10, 5, gRenderer);
@@ -278,6 +285,8 @@ int main(int argc, char* args[])
 					quit = true;
 					std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
 				}
+
+				HUD.render(player.getHP(), 100);
 
 				//Outline everything that's rendered
 				WTexture::outlineAll(gRenderer);

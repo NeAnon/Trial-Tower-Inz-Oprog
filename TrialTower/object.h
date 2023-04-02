@@ -58,28 +58,28 @@ public:
 };
 
 Object::Object() {
-	//Set dimensions of entity's sprites
+	//Set dimensions of object's sprites
 	clip = { 0, 0, 32, 32 };
 
-	//Set entity position (specified as grid params)
+	//Set object position (specified as grid params)
 	mPosX = 1; mPosY = 1;
 }
 
 inline Object::Object(int x, int y)
 {
-	//Set dimensions of entity's sprites
+	//Set dimensions of object's sprites
 	clip = { 0, 0, 32, 32 };
 
-	//Set entity position (specified as grid params)
+	//Set object position (specified as grid params)
 	mPosX = x; mPosY = y;
 }
 
 inline Object::Object(int x, int y, SDL_Renderer* renderPtr)
 {
-	//Set dimensions of entity's sprites
+	//Set dimensions of object's sprites
 	clip = { 0, 0, 32, 32 };
 
-	//Set entity position (specified as grid params)
+	//Set object position (specified as grid params)
 	mPosX = x; mPosY = y;
 
 	mTexture.setRenderer(renderPtr);

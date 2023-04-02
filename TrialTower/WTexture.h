@@ -25,6 +25,9 @@ private:
 	static int LEVEL_WIDTH;
 	static int LEVEL_HEIGHT;
 
+	static int GAME_WIDTH;
+	static int GAME_HEIGHT;
+
 	static int WINDOW_WIDTH;
 	static int WINDOW_HEIGHT;
 	static double upscale;
@@ -54,18 +57,20 @@ public:
 	//Set target renderer (required, since we have no global one here)
 	void setRenderer(SDL_Renderer* renderPtr);
 
-	inline static void setGlobalLSize(int w,int h )	{ LEVEL_WIDTH = w; LEVEL_HEIGHT = h; }
+	inline static void setGlobalLSize(int w, int h) { LEVEL_WIDTH = w; LEVEL_HEIGHT = h; GAME_WIDTH = LEVEL_WIDTH; GAME_HEIGHT = LEVEL_HEIGHT + 32; }
+	inline static int getGlobalLWidth() { return LEVEL_WIDTH; }
+	inline static int getGlobalLHeight() { return LEVEL_HEIGHT; }
 
 	inline static void setGlobalWSize(int w, int h)	{ WINDOW_WIDTH = w; WINDOW_HEIGHT = h; }
 
 	inline static void calculate_renderRect() {
 		//Find stretch vals needed for both dimensions to fit screen, and choose the smallest to be the stretch val (letterboxing > loss of render space)
-		double w_stretch = (WINDOW_WIDTH * 1.0) / LEVEL_WIDTH; double h_stretch = (WINDOW_HEIGHT * 1.0) / LEVEL_HEIGHT;
+		double w_stretch = (WINDOW_WIDTH * 1.0) / GAME_WIDTH; double h_stretch = (WINDOW_HEIGHT * 1.0) / GAME_HEIGHT;
 		upscale = (w_stretch <= h_stretch ? w_stretch : h_stretch);
 		//std::cout << "Upscale value: " << upscale << "\n";
 
 		//Use upscale value to find centering offset
-		w_offset = (WINDOW_WIDTH - (LEVEL_WIDTH * upscale))/2; h_offset = (WINDOW_HEIGHT - (LEVEL_HEIGHT * upscale))/2;
+		w_offset = (WINDOW_WIDTH - (GAME_WIDTH * upscale))/2; h_offset = (WINDOW_HEIGHT - (GAME_HEIGHT * upscale))/2;
 		//std::cout << "Width offset: " << w_offset << "\nHeight offset: " << h_offset << std::endl;
 	}
 
@@ -187,6 +192,9 @@ inline void WTexture::setRenderer(SDL_Renderer* renderPtr)
 
 int WTexture::LEVEL_WIDTH;
 int WTexture::LEVEL_HEIGHT;
+
+int WTexture::GAME_WIDTH;
+int WTexture::GAME_HEIGHT;
 
 int WTexture::WINDOW_WIDTH;
 int WTexture::WINDOW_HEIGHT;
