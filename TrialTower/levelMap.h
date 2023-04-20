@@ -51,6 +51,7 @@ LevelMap::LevelMap() {
 			map[i][j] = 0;
 		}
 	}
+	hasPortal = false; portalPtr = nullptr; portalX = -1; portalY = -1;
 }
 
 inline LevelMap::LevelMap(int x, int y)
@@ -65,6 +66,7 @@ inline LevelMap::LevelMap(int x, int y)
 			map[i][j] = nullptr;
 		}
 	}
+	hasPortal = false; portalPtr = nullptr; portalX = -1; portalY = -1;
 }
 
 inline LevelMap::~LevelMap()

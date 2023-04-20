@@ -58,7 +58,7 @@ public:
 
 	void loadWallMedia() {
 		//Load media specifically used by the walls
-		loadMedia("wall_dark.png");
+		loadMedia("wall_rock.png");
 	}
 
 	std::string echo() { return "Wall"; }
@@ -81,7 +81,44 @@ inline Wall::~Wall()
 {
 }
 
+//Walls are treated as impassable tiles
+class Floor : public Tile {
+private:
 
+public:
+	//Wall contructor
+	Floor();
+
+	//Wall contructor at pos
+	Floor(int x, int y, SDL_Renderer* renderPtr);
+
+	//Wall destructor
+	~Floor();
+
+	void loadFloorMedia() {
+		//Load media specifically used by the walls
+		loadMedia("floor_wood.png");
+	}
+
+	std::string echo() { return "Floor"; }
+
+	void setPos(int x, int y) { setX(x); setY(y); }
+
+	void renderText(int x, int y, int screenW, int screenY) {};
+};
+
+inline Floor::Floor() {
+
+}
+
+inline Floor::Floor(int x, int y, SDL_Renderer* renderPtr): Tile(x, y, renderPtr)
+{
+	loadFloorMedia();
+}
+
+inline Floor::~Floor()
+{
+}
 
 class Portal : public Tile {
 private:

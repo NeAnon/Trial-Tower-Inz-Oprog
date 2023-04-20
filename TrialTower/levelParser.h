@@ -35,25 +35,6 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 		for (int x = 0; x < xSize; x++) {
 			file >> buf;
 			//std::cout << buf << "\t\t buf read, pushed at x: " << x << ", y: " << y << "\n";
-
-			//	Entity/Enemy
-			if (buf[0] == 'E') {
-				if (buf[1] == 'G') {
-					eList.addEnemy(x, y);
-				}
-				else if (buf[1] == 'S') {
-					eList.addEnemy(x, y, "Slide", buf[2]-'0');
-				}
-				else if (buf[1] == 'W') {
-					eList.addEnemy(x, y, "Wander");
-				}
-				else{ eList.addEnemy(x, y); }
-			}
-			//	Player
-			if (buf[0] == 'P' && !playerAdded) {
-				player.setX(x); player.setY(y);
-				playerAdded = true;
-			}
 			//	Tile
 			if (buf[0] == 'T') {
 				if (buf[1] == 'W') {
@@ -62,6 +43,27 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 				else if (buf[1] == 'P') {
 					lvlMap.insertPortal(new Portal(x, y, renderPtr));
 				}
+			}
+			else {
+				//	Entity/Enemy
+				if (buf[0] == 'E') {
+					if (buf[1] == 'G') {
+						eList.addEnemy(x, y);
+					}
+					else if (buf[1] == 'S') {
+						eList.addEnemy(x, y, "Slide", buf[2] - '0');
+					}
+					else if (buf[1] == 'W') {
+						eList.addEnemy(x, y, "Wander");
+					}
+					else { eList.addEnemy(x, y); }
+				}
+				//	Player
+				if (buf[0] == 'P' && !playerAdded) {
+					player.setX(x); player.setY(y);
+					playerAdded = true;
+				}
+				lvlMap.insertObj(new Floor(x, y, renderPtr));
 			}
 		}
 	}

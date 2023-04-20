@@ -22,6 +22,9 @@
 #include "enemy.h"
 #include "levelParser.h"
 
+//Title
+#include "title.h"
+
 int GAME_WIDTH = 640;
 int GAME_HEIGHT = 512;
 
@@ -33,6 +36,9 @@ bool init();
 
 //Loads media
 bool loadMedia();
+
+//Loads the sample level from path
+void loadLevel(std::string levelPath, Player& player, LevelMap& lvlMap, enemyList& eList);
 
 //Frees media and shuts down SDL
 void close();
@@ -101,6 +107,17 @@ bool loadMedia()
     return success;
 }
 
+void loadLevel(std::string levelPath, Player &player, LevelMap &lvlMap, enemyList &eList) {
+	parseLevel(levelPath, player, lvlMap, eList, gRenderer);
+
+	//Set level size to level dims
+	WTexture::setGlobalLSize(lvlMap.getXSize() * 32, lvlMap.getYSize() * 32);
+	WTexture::calculate_renderRect();
+
+	//reload media for selected enemies
+	eList.reloadMedia();
+}
+
 void close()
 {
     //Destroy window	
@@ -136,32 +153,37 @@ int main(int argc, char* args[])
 			//Event handler
 			SDL_Event e;
 
+			bool inLevel = false;
+
 			//Set level and window sizes for WTexture to use
-			WTexture::setGlobalLSize(0, 0);
+			WTexture::setGlobalLSize(WINDOW_WIDTH, WINDOW_WIDTH);
 			
 			WTexture::setGlobalWSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-
+			 
 			WTexture::calculate_renderRect();
 
+			Title titleScreen(gRenderer);
+
 			//Player character
-			Player player(2, 2, gRenderer);
+			Player player(0, 0, gRenderer);
 
 			enemyList eList;
 			eList.setRenderer(gRenderer);
-
 			LevelMap lvlMap;
-
-			parseLevel("levels/sampleLevel.lvl", player, lvlMap, eList, gRenderer);
-
-			//Set level size to level dims
-			WTexture::setGlobalLSize(lvlMap.getXSize() * 32, lvlMap.getYSize() * 32);
-			WTexture::calculate_renderRect();
-
-			eList.reloadMedia();
-
+			Portal* portal = new Portal(0, 0, gRenderer);
+			
 			Interface HUD(gRenderer);
 			HUD.loadInterface();
-			
+
+			if (inLevel) {
+				loadLevel("levels/sampleLevel.lvl", player, lvlMap, eList);
+
+				delete portal;
+
+				portal = lvlMap.getPortalPtr();
+			}
+
+
 			//Enemies
 		//	Enemy* enemy1 = new Enemy(10, 5, gRenderer);
 		//	Enemy* enemy2 = new Enemy(7, 7, gRenderer);
@@ -190,8 +212,9 @@ int main(int argc, char* args[])
 			//std::wcout << ExePath() << std::endl;
 			//std::wcout << "---------------path------------------" << std::endl;
 			
-
-			Portal* portal = lvlMap.getPortalPtr();
+			int mx_ = 0;
+			int my_ = 0;
+			
 
 			//While the application is running...
             while (!quit)
@@ -217,79 +240,118 @@ int main(int argc, char* args[])
 						}
 					}
 					//User presses a key
-					else if (e.type == SDL_KEYDOWN)
-					{
-						int pDamageAcc = 0;
-						//Move player based on key press
-						switch (e.key.keysym.sym)
+					if (inLevel) {
+						if (e.type == SDL_KEYDOWN)
 						{
-						case SDLK_UP:
-							player.move(DIRECTION_UP, lvlMap, eList, portal);
-							eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-							player.hurt(pDamageAcc);
-							if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-							break;
+							int pDamageAcc = 0;
+							//Move player based on key press
+							switch (e.key.keysym.sym)
+							{
+							case SDLK_UP:
+								player.move(DIRECTION_UP, lvlMap, eList, portal);
+								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+								player.hurt(pDamageAcc);
+								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+								break;
 
-						case SDLK_DOWN:
-							player.move(DIRECTION_DOWN, lvlMap, eList, portal);
-							eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-							player.hurt(pDamageAcc);
-							if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-							break;
+							case SDLK_DOWN:
+								player.move(DIRECTION_DOWN, lvlMap, eList, portal);
+								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+								player.hurt(pDamageAcc);
+								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+								break;
 
-						case SDLK_LEFT:
-							player.move(DIRECTION_LEFT, lvlMap, eList, portal);
-							eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-							player.hurt(pDamageAcc);
-							if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-							break;
+							case SDLK_LEFT:
+								player.move(DIRECTION_LEFT, lvlMap, eList, portal);
+								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+								player.hurt(pDamageAcc);
+								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+								break;
 
-						case SDLK_RIGHT:
-							player.move(DIRECTION_RIGHT, lvlMap, eList, portal);
-							eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-							player.hurt(pDamageAcc);
-							if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-							break;
+							case SDLK_RIGHT:
+								player.move(DIRECTION_RIGHT, lvlMap, eList, portal);
+								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+								player.hurt(pDamageAcc);
+								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+								break;
 
-						default:
+							default:
+								break;
+							}
+						}
+					}
+					else {
+						int action = -1;
+						if (e.type == SDL_KEYDOWN) {
+							switch (e.key.keysym.sym) {
+							case SDLK_SPACE:
+								action = titleScreen.selectOpt(SELECT_CENTER);
+								break;
+							case SDLK_RETURN:
+								action = titleScreen.selectOpt(SELECT_CENTER);
+								break;
+							case SDLK_ESCAPE:
+								action = titleScreen.selectOpt(OPT_QUIT, true);
+								break;
+							case SDLK_UP:
+								action = titleScreen.selectOpt(SELECT_UP);
+								break;
+							case SDLK_DOWN:
+								action = titleScreen.selectOpt(SELECT_DOWN);
+								break;
+							}
+						}
+						switch (action) {
+						case OPT_START:
+							loadLevel("levels/sampleLevel.lvl", player, lvlMap, eList);
+
+							delete portal;
+							portal = lvlMap.getPortalPtr();
+							inLevel = true;
 							break;
+						case OPT_QUIT:
+							quit = true;
 						}
 					}
                 }
 
-                //Clear screen
-                SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
-                SDL_RenderClear(gRenderer);
+				//Clear screen
+				SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+				SDL_RenderClear(gRenderer);
 
+				if (inLevel) {
+					if (inLevel && portal->isFinished()) {
+						std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
+						quit = true;
+					}
 
-				if (portal->isFinished()) {
-					std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
-					quit = true;
-				}
+					//Render the map
+					lvlMap.renderAll();
 
-				//Render the map
-				lvlMap.renderAll();
+					//Render all remaining enemies
+					eList.renderAll();
 
-				//Render all remaining enemies
-				eList.renderAll();
-				
-				if (player.getX() == portal->getX() && player.getY() == portal->getY() && quit == false) {
-					portal->renderText(portal->getX(), portal->getY(), GAME_WIDTH, GAME_HEIGHT);
-				}
+					if (player.getX() == portal->getX() && player.getY() == portal->getY() && quit == false) {
+						portal->renderText(portal->getX(), portal->getY(), GAME_WIDTH, GAME_HEIGHT);
+					}
 
-				//Render the player
-				if (player.isAlive()) {
-					player.render();
+					//Render the player
+					if (player.isAlive()) {
+						player.render();
+					}
+					else {
+						quit = true;
+						std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
+					}
+
+					HUD.render(player.getHP(), 100);
+
+					//Outline everything that's rendered
+					WTexture::outlineAll(gRenderer);
 				}
 				else {
-					quit = true;
-					std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
+					titleScreen.render();
 				}
-
-				HUD.render(player.getHP(), 100);
-
-				//Outline everything that's rendered
-				WTexture::outlineAll(gRenderer);
 
 				//Update screen (must be after rendering everything prior!!!)
                 SDL_RenderPresent(gRenderer);

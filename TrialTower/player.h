@@ -67,7 +67,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 			actionTaken = true;
 		}
 		if (!actionTaken) {
-			if (nextY >= 0 && wallMap.getObj(nextX, nextY) == nullptr) { setY(nextY); }
+			if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "Floor") { setY(nextY); }
 			else if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
 				setY(nextY); bool finished = true;
 				if (list.enemiesLeft() > 0) {
@@ -87,7 +87,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 			actionTaken = true;
 		}
 		if (!actionTaken) {
-			if (nextX < wallMap.getXSize() && wallMap.getObj(nextX, nextY) == nullptr) { setX(nextX); }
+			if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "Floor") { setX(nextX); }
 			else if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "Portal") {
 				setX(nextX); bool finished = true;
 				if (list.enemiesLeft() > 0) {
@@ -108,7 +108,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 			actionTaken = true;
 		}
 		if (!actionTaken) {
-			if (nextY < wallMap.getYSize() && wallMap.getObj(nextX, nextY) == nullptr) { setY(nextY); }
+			if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "Floor") { setY(nextY); }
 			else if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "Portal") {
 				setY(nextY); bool finished = true;
 				if (list.enemiesLeft() > 0) {
@@ -128,7 +128,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 			actionTaken = true;
 		}
 		if (!actionTaken) {
-			if (nextX >= 0 && wallMap.getObj(nextX, nextY) == nullptr) { setX(nextX); }
+			if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "Floor") { setX(nextX); }
 			else if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
 				setX(nextX); bool finished = true;
 				if (list.enemiesLeft() > 0) {

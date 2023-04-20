@@ -78,6 +78,13 @@ public:
 		std::cout << "Scale: " << upscale << "\t\tWOffset: " << w_offset << "\t\t HOffset: " << h_offset << std::endl;
 	}
 
+
+	inline static int getGlobalXOffset() { return w_offset; }
+	inline static int getGlobalYOffset() { return h_offset; }
+	inline static double getGlobalScale() { return upscale; }
+	inline static int getScaledX(int mx_) { return (std::round(mx_ * upscale) + w_offset); }
+	inline static int getScaledY(int my_) { return (std::round(my_ * upscale) + h_offset); }
+
 	inline static void outlineAll(SDL_Renderer * renderPtr)
 	{
 		SDL_SetRenderDrawColor(renderPtr, 0xFF, 0xFF, 0xFF, 0xFF);

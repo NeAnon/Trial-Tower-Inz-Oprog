@@ -251,7 +251,7 @@ public:
 };
 
 //If you're putting over 1000 enemies into a single level, you have a problem
-enemyList::enemyList() { list.reserve(1000); }
+enemyList::enemyList() { list.reserve(1000); global_renderer = NULL; enemySelected = -1; }
 
 inline enemyList::~enemyList()
 {
@@ -296,6 +296,7 @@ inline bool enemyList::isAt(int x, int y) {
 }
 
 inline void enemyList::attackSelected() {
+	if (enemySelected == -1) { return; }
 	if (list[enemySelected] != nullptr) {
 		delete list[enemySelected];
 		list[enemySelected] = nullptr;
