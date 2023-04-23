@@ -43,6 +43,18 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 				else if (buf[1] == 'P') {
 					lvlMap.insertPortal(new Portal(x, y, renderPtr));
 				}
+				else if (buf[1] == 'S') {
+					Trap* temp = nullptr;
+					if (buf[2] == 'A') { 
+						temp = new SpikeTrap(x, y, renderPtr, true);
+					}
+					else {
+						std::cout << "At " << x << ", " << y << " the trap is not traversible!\n";
+						temp = new SpikeTrap(x, y, renderPtr, false);
+					}
+					lvlMap.insertObj(temp);
+					lvlMap.addTrap(temp);
+				}
 			}
 			else {
 				//	Entity/Enemy

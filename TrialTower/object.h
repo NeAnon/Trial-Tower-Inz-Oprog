@@ -43,7 +43,7 @@ public:
 	int getY() { return mPosY; }	void setY(int y) { mPosY = y; }
 
 	//Set tile_size clip to x and y coords on the sprite sheet
-	void setClip(int x, int y) { clip.x = x * 32; clip.y = y * 32; }
+	void setClip(int x, int y, int w = 32, int h = 32) { clip.x = x * 32; clip.y = y * 32; clip.w = w; clip.h = h; }
 
 	//Sets renderer for own texture
 	void setRenderer(SDL_Renderer* renderPtr) { mTexture.setRenderer(renderPtr); }

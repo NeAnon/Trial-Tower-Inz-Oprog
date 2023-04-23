@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <list>
 
 //debugging
 #include <iostream>
@@ -248,29 +249,37 @@ int main(int argc, char* args[])
 							switch (e.key.keysym.sym)
 							{
 							case SDLK_UP:
+								lvlMap.updateTiles();
 								player.move(DIRECTION_UP, lvlMap, eList, portal);
 								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
 								player.hurt(pDamageAcc);
 								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
 								break;
 
 							case SDLK_DOWN:
+								lvlMap.updateTiles();
 								player.move(DIRECTION_DOWN, lvlMap, eList, portal);
 								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
 								player.hurt(pDamageAcc);
 								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
 								break;
 
 							case SDLK_LEFT:
+								lvlMap.updateTiles();
 								player.move(DIRECTION_LEFT, lvlMap, eList, portal);
 								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
 								player.hurt(pDamageAcc);
 								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
 								break;
 
 							case SDLK_RIGHT:
+								lvlMap.updateTiles();
 								player.move(DIRECTION_RIGHT, lvlMap, eList, portal);
 								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
 								player.hurt(pDamageAcc);
 								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
 								break;

@@ -5,6 +5,7 @@
 #include <SDL_image.h>
 #include <stdio.h>
 #include <string>
+#include <list>
 
 //Wrapped texture class 
 #include "WTexture.h"
@@ -26,6 +27,8 @@ public:
 	~Tile();
 
 	virtual void renderText(int posX, int posY, int screenW, int screenY) = 0;
+
+	virtual void handlePlayer() {};
 };
 
 Tile::Tile() : Object() {
@@ -204,4 +207,191 @@ inline void Portal::renderText(int posX, int posY, int screenW, int screenY)
 	}
 	//Render text at decided pos
 	mText.render(renderX, renderY);
+}
+
+class Trap : public Tile {
+	int state;
+	bool activated;
+public:
+	Trap() {}
+
+	Trap(int x, int y, SDL_Renderer* renderPtr) : Tile(x, y, renderPtr) { state = 0; activated = false; }
+
+	int getState() { return state; }
+	void setState(int n) { state = n; }
+	void setActive(bool val) { activated = val; } 
+	bool checkActive() { return activated; }
+
+	virtual void activate(bool, int&) {};
+	virtual void updateClip() {}
+};
+
+class SpikeTrap : public Trap {
+private:
+	bool isPassable;
+	
+public:
+	//Wall contructor
+	SpikeTrap();
+
+	//Wall contructor at pos
+	SpikeTrap(int x, int y, SDL_Renderer* renderPtr, bool passable = false);
+
+	//Wall destructor
+	~SpikeTrap();
+
+	void loadFloorMedia() {
+		//Load media specifically used by the walls
+		loadMedia("spikeTrap.png");
+	}
+
+	std::string echo() { return "SpikeTrap"; }
+
+	void setPos(int x, int y) { setX(x); setY(y); }
+
+	void renderText(int x, int y, int screenW, int screenY) {};
+
+	bool isSoft() { return isPassable; }
+	void activate(bool triggered, int &damageCounter);
+	void updateClip() { if (getState() <= 0 && isSoft()) { setClip(0, 0); } else { setClip(1, 0); } }
+};
+
+inline SpikeTrap::SpikeTrap(){
+	bool isPassable = false;
+	int state = 0;
+}
+
+inline SpikeTrap::SpikeTrap(int x, int y, SDL_Renderer* renderPtr, bool passable) : Trap(x, y, renderPtr)
+{
+	isPassable = passable;
+	setState(0);
+	if (!passable) { setClip(1, 0); }
+	loadFloorMedia();
+}
+
+inline SpikeTrap::~SpikeTrap()
+{
+}
+
+
+inline void SpikeTrap::activate(bool triggered, int &damageCounter)
+{	//0 is resting state - logic needs to be determined separately for "soft" and "hard" spike-traps
+	if (isPassable) {
+		if (triggered) {
+			if (getState() == 0) { 
+				setState(getState() + 1); 
+				if (!checkActive()) { setActive(true); }
+				return; 
+			}
+			else {
+				setState(2); setClip(1, 0); damageCounter += 25;
+			}
+		}
+		else {
+			setState(getState() + 1);
+			if (getState() >= 1) { setClip(1, 0); }
+			if (getState() == 5) {
+				setState(0);
+				setClip(0, 0);
+			}
+		}
+		if (!checkActive()) { setActive(true); }
+		return;
+	} else {
+		damageCounter += 25;
+	}
+	if (!checkActive()) { setActive(true); }
+	return;
+}
+
+class trapList {
+private:
+	std::vector<Trap*> list;
+	std::vector<Trap*> activeList;
+	SDL_Renderer* global_renderer;
+public:
+	trapList();
+
+	~trapList();
+
+	void setRenderer(SDL_Renderer* renderPtr) { global_renderer = renderPtr; };
+
+	void addTrap(Trap* selectedTrap, int metadata);
+
+	void clear();
+
+	void activateAt(int x, int y, int& damage);
+
+	//void reloadMedia();
+
+	//void renderAll();
+
+	void updateAll();
+};
+
+trapList::trapList() { list.reserve(1000); activeList.reserve(1000); global_renderer = NULL; }
+
+inline trapList::~trapList()
+{
+	for (int i = 0; i < list.size(); i++) {
+		if (list[i] != nullptr) {
+			//std::cout << "Deleting ref from pos " << i << '\n';
+			list[i] = nullptr;
+		}
+	}
+}
+
+inline void trapList::addTrap(Trap* selectedTrap, int metadata = 0)
+{
+	list.push_back(selectedTrap);
+}
+
+inline void trapList::clear()
+{
+	for (int i = 0; i < list.size(); i++) {
+		list[i] = nullptr;
+	}
+}
+
+inline void trapList::activateAt(int x, int y, int& damage)
+{
+	//Placeholder for checking for another instance of a tile being active
+	int free_spot = -1;
+	//std::cout << "Activation at " << x << " " << y << "\n";
+	for (int i = 0; i < list.size(); i++) {
+		if (list[i]->getX() == x && list[i]->getY() == y) {
+			//std::cout << "Located trap...\n";
+			list[i]->activate(true, damage);
+			for (int j = 0; j < activeList.size(); j++) {
+				if (activeList[j] == nullptr) {
+					if (free_spot == -1) {
+						free_spot = j;
+					}
+				} else if (list[i]->getX() == activeList[j]->getX() && list[i]->getY() == activeList[j]->getY()) { return; }
+			}
+			if (free_spot >= 0) { activeList[free_spot] = list[i]; }
+			else { activeList.push_back(list[i]); }
+		}
+	}
+}
+
+inline void trapList::updateAll()
+{
+	int dummy = 0;
+	for (int i = 0; i < activeList.size(); i++) {
+		if (activeList[i] != nullptr && activeList[i]->checkActive() == false){
+			activeList[i]->activate(false, dummy);
+			//std::cout << activeList[i]->echo() << " activated at (" << activeList[i]->getX() << ", " << activeList[i]->getY() << "), state = " << activeList[i]->getState() << "\n";
+			if (activeList[i]->getState() == 0) {
+				//std::cout << "Tile at " << activeList[i]->getX() << ", " << activeList[i]->getY() << " has state " << activeList[i]->getState() << "\n";
+				//std::cout << "Tile removed from activation list\n";
+				activeList[i] = nullptr;
+			}
+			
+		}
+		if (activeList[i] != nullptr) {
+			activeList[i]->setActive(false);
+			activeList[i]->updateClip();
+		}
+	}
 }

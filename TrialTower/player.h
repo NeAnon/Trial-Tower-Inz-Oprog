@@ -56,6 +56,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 	int nextY = getY();
 
 	bool actionTaken = false;
+	int accDamage = 0;
 
 	//Depending on direction chosen, if within boundaries and not about to run into a wall, move the entity
 	switch (direction) {
@@ -68,6 +69,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		}
 		if (!actionTaken) {
 			if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "Floor") { setY(nextY); }
+			else if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setY(nextY); }
 			else if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
 				setY(nextY); bool finished = true;
 				if (list.enemiesLeft() > 0) {
@@ -88,6 +90,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		}
 		if (!actionTaken) {
 			if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "Floor") { setX(nextX); }
+			else if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setX(nextX); }
 			else if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "Portal") {
 				setX(nextX); bool finished = true;
 				if (list.enemiesLeft() > 0) {
@@ -109,6 +112,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		}
 		if (!actionTaken) {
 			if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "Floor") { setY(nextY); }
+			else if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setY(nextY); }
 			else if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "Portal") {
 				setY(nextY); bool finished = true;
 				if (list.enemiesLeft() > 0) {
@@ -129,6 +133,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		}
 		if (!actionTaken) {
 			if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "Floor") { setX(nextX); }
+			else if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setX(nextX); }
 			else if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
 				setX(nextX); bool finished = true;
 				if (list.enemiesLeft() > 0) {
@@ -143,6 +148,8 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 	default:
 		break;
 	}
+	hurt(accDamage);
+	//std::cout << "Next tile: " << wallMap.echoObj(nextX, nextY) << "\n";
 }
 
 class Interface {

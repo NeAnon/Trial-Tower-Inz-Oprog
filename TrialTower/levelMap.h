@@ -15,6 +15,7 @@ class LevelMap {
 private:
 	std::vector< std::vector< Tile* > > map;
 	bool hasPortal; int portalX; int portalY; Portal* portalPtr;
+	trapList traps;
 public:
 	LevelMap();
 
@@ -36,6 +37,12 @@ public:
 	int getPortalX()	{ return portalX; }
 	int getPortalY()	{ return portalY; }
 	Portal* getPortalPtr() { return portalPtr; }
+
+	//void setTrapRenderer(SDL_Renderer* rPtr) { traps.setRenderer(rPtr); }
+	void addTrap(Trap* trap, int metadata = 0) { traps.addTrap(trap, metadata); }
+	void activateTrap(int pX, int pY, int& damage) { traps.activateAt(pX, pY, damage); }
+	void clearTraplist() { traps.clear(); }
+	void updateTiles() { traps.updateAll(); };
 
 	void renderAll();
 };
