@@ -39,7 +39,7 @@ bool init();
 bool loadMedia();
 
 //Loads the sample level from path
-void loadLevel(std::string levelPath, Player& player, LevelMap& lvlMap, enemyList& eList);
+void loadLevel(std::string levelPath, Player& player, LevelMap& lvlMap, enemyList& eList, Portal*& portal);
 
 //Frees media and shuts down SDL
 void close();
@@ -108,7 +108,7 @@ bool loadMedia()
     return success;
 }
 
-void loadLevel(std::string levelPath, Player &player, LevelMap &lvlMap, enemyList &eList) {
+void loadLevel(std::string levelPath, Player &player, LevelMap &lvlMap, enemyList &eList, Portal*& portal) {
 	parseLevel(levelPath, player, lvlMap, eList, gRenderer);
 
 	//Set level size to level dims
@@ -117,6 +117,8 @@ void loadLevel(std::string levelPath, Player &player, LevelMap &lvlMap, enemyLis
 
 	//reload media for selected enemies
 	eList.reloadMedia();
+
+	portal = lvlMap.getPortalPtr();
 }
 
 void close()
@@ -155,6 +157,7 @@ int main(int argc, char* args[])
 			SDL_Event e;
 
 			bool inLevel = false;
+			int lvCounter = 1;
 
 			//Set level and window sizes for WTexture to use
 			WTexture::setGlobalLSize(WINDOW_WIDTH, WINDOW_WIDTH);
@@ -177,11 +180,8 @@ int main(int argc, char* args[])
 			HUD.loadInterface();
 
 			if (inLevel) {
-				loadLevel("levels/sampleLevel.lvl", player, lvlMap, eList);
-
 				delete portal;
-
-				portal = lvlMap.getPortalPtr();
+				loadLevel("levels/sampleLevel.lvl", player, lvlMap, eList, portal);
 			}
 
 
@@ -312,10 +312,8 @@ int main(int argc, char* args[])
 						}
 						switch (action) {
 						case OPT_START:
-							loadLevel("levels/sampleLevel.lvl", player, lvlMap, eList);
-
 							delete portal;
-							portal = lvlMap.getPortalPtr();
+							loadLevel("levels/sampleLevel.lvl", player, lvlMap, eList, portal);
 							inLevel = true;
 							break;
 						case OPT_QUIT:
@@ -330,8 +328,14 @@ int main(int argc, char* args[])
 
 				if (inLevel) {
 					if (inLevel && portal->isFinished()) {
-						std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
-						quit = true;
+						if (lvCounter == 1) {
+							loadLevel("levels/sampleLevel2.lvl", player, lvlMap, eList, portal); 
+							lvCounter++; 
+						}
+						else {
+							std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
+							quit = true;
+						}
 					}
 
 					//Render the map

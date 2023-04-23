@@ -351,6 +351,11 @@ inline void trapList::clear()
 	for (int i = 0; i < list.size(); i++) {
 		list[i] = nullptr;
 	}
+
+	list.clear();
+	list.shrink_to_fit();
+	list.reserve(1000);
+	std::cout << "Trap list size: " << list.size() << "\n";
 }
 
 inline void trapList::activateAt(int x, int y, int& damage)

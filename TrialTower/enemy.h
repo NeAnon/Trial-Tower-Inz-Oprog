@@ -247,6 +247,8 @@ public:
 
 	void renderAll();
 
+	void clear();
+
 	void moveAll(LevelMap& map, int& dmgCounter, int playerX, int playerY);
 };
 
@@ -326,6 +328,21 @@ inline void enemyList::renderAll() {
 			list[i]->render();
 		}
 	}
+}
+
+inline void enemyList::clear()
+{
+	for (int i = 0; i < list.size(); i++) {
+		if (list[i] != nullptr) {
+			std::cout << "Deleting from " << i << '\n';
+			delete list[i];
+			list[i] = nullptr;
+		}
+	}
+	list.clear();
+	list.shrink_to_fit();
+	list.reserve(1000);
+	std::cout << "Enemy list size: " << list.size() << "\n";
 }
 
 inline void enemyList::moveAll(LevelMap& map, int& dmgCounter, int playerX, int playerY) {

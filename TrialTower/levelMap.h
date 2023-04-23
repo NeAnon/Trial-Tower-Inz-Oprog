@@ -103,6 +103,7 @@ inline void LevelMap::remakeLevel(int x, int y)
 	}
 
 	hasPortal = false;
+	traps.clear();
 
 	//Resize to new, blank level
 	map.resize(x);

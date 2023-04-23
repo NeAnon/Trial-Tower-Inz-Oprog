@@ -29,6 +29,7 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 	lvlMap.remakeLevel(xSize, ySize);
 
 	bool playerAdded = false;
+	eList.clear();
 
 	std::cout << "Beginning read of rest of file...\n";
 	for (int y = 0; y < ySize; y++) {
