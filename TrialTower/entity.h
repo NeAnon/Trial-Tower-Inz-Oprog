@@ -67,7 +67,8 @@ inline Entity::~Entity()
 }
 
 class Enemy : public Entity {
-
+private:
+	int health;
 public:
 	Enemy();
 
@@ -84,13 +85,17 @@ public:
 
 	virtual int next_move(LevelMap& wallMap, int playerX, int playerY) = 0;//Direction of next move (function of movement logic)
 	virtual void move(int direction, int& dmgCounter, int playerX, int playerY) = 0;
+
+	void damage(int dealtDmg) { health -= dealtDmg; }
+	int getHP() { return health; }
+
 };
 
 inline Enemy::Enemy() : Entity() {
 	printf("Enemy alive!\n");
 }
 
-inline Enemy::Enemy(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadEnemyMedia(); }
+inline Enemy::Enemy(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { health = 10; loadEnemyMedia(); }
 
 inline Enemy::~Enemy()
 {

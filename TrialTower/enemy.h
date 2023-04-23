@@ -329,9 +329,17 @@ inline void enemyList::renderAll() {
 }
 
 inline void enemyList::moveAll(LevelMap& map, int& dmgCounter, int playerX, int playerY) {
+	int eDmgAcc = 0;
 	for (int i = 0; i < list.size(); i++) {
+		eDmgAcc = 0;
 		if (list[i] != nullptr) {
 			list[i]->move(list[i]->next_move(map, playerX, playerY), dmgCounter, playerX, playerY);
+			map.activateTrap(list[i]->getX(), list[i]->getY(), eDmgAcc);
+			list[i]->damage(eDmgAcc);
+			if (list[i]->getHP() <= 0) {
+				delete list[i];
+				list[i] = nullptr;
+			}
 		}
 	}
 }
