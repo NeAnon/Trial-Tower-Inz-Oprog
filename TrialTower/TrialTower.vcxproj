@@ -22,14 +22,53 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="debugFuncs.h" />
+    <ClInclude Include="enemy.h" />
+    <ClInclude Include="entity.h" />
     <ClInclude Include="levelMap.h" />
+    <ClInclude Include="levelParser.h" />
+    <ClInclude Include="object.h" />
     <ClInclude Include="player.h" />
-    <ClInclude Include="wall.h" />
+    <ClInclude Include="tile.h" />
+    <ClInclude Include="title.h" />
     <ClInclude Include="WTexture.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="resources\coin.png" />
+    <Image Include="resources\coin_ground.png" />
+    <Image Include="resources\digits.png" />
+    <Image Include="resources\dragon_left.png" />
+    <Image Include="resources\dragon_right.png" />
+    <Image Include="resources\enemySliderSheet.png" />
+    <Image Include="resources\enemySpriteSheetTransparent-1.png" />
+    <Image Include="resources\enemySpriteSheetTransparent-2.png" />
+    <Image Include="resources\enemySpriteSheetTransparent.png" />
+    <Image Include="resources\enemyWanderSheet.png" />
+    <Image Include="resources\floor_wood.png" />
+    <Image Include="resources\healthbar.png" />
+    <Image Include="resources\healthbarMissing.png" />
+    <Image Include="resources\Heart.png" />
+    <Image Include="resources\hero_back.png" />
+    <Image Include="resources\hero_front.png" />
+    <Image Include="resources\hero_left.png" />
+    <Image Include="resources\hero_right.png" />
+    <Image Include="resources\objective.png" />
     <Image Include="resources\playerSpriteSheet.png" />
+    <Image Include="resources\playerSpriteSheet2.png" />
     <Image Include="resources\playerSpriteSheetTransparent.png" />
+    <Image Include="resources\portal.png" />
+    <Image Include="resources\quit_button.png" />
+    <Image Include="resources\slime.png" />
+    <Image Include="resources\spikeTrap.png" />
+    <Image Include="resources\start_button.png" />
+    <Image Include="resources\title_screen.png" />
+    <Image Include="resources\wall_dark.png" />
+    <Image Include="resources\wall_light.png" />
+    <Image Include="resources\wall_rock.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="levels\sampleLevel.lvl" />
+    <None Include="levels\sampleLevel2.lvl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

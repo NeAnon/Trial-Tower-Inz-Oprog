@@ -36,8 +36,9 @@ public:
 	void hurt(int damage) { hitPts -= damage; }
 	bool isAlive() { return hitPts > 0; }
 	int getHP() { return hitPts; }
+	void addMoney(int money) { gold += money; }
 	int getMoney() { return gold; }
-
+	
 	//Movement handler
 	void move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal);
 };
@@ -206,7 +207,8 @@ public:
 		}
 		else {
 			while (money > 0) {
-
+				digitTexture.render(WTexture::getGlobalLWidth() - ((16 * coinOffset++) + 48), WTexture::getGlobalLHeight(), &digits[money%10]);
+				money /= 10;
 			}
 		}
 
@@ -219,6 +221,7 @@ Interface::Interface() {
 	healthBarState = { 0, 0, 128, 32 };
 	healthBarMissing = { 0, 0, 128, 32 };
 	coinState = { 0, 0, 32, 32 };
+	digits.resize(10);
 	for (int i = 0; i < 10; i++) {
 		digits[i].x = i * 16;
 		digits[i].y = 0;
@@ -232,6 +235,7 @@ inline Interface::Interface(SDL_Renderer* renderPtr)
 	healthBarState = { 0, 0, 128, 32 };
 	healthBarMissing = { 0, 0, 128, 32 };
 	coinState = { 0, 0, 32, 32 };
+	digits.resize(10);
 	for (int i = 0; i < 10; i++) {
 		digits[i].x = i * 16;
 		digits[i].y = 0;

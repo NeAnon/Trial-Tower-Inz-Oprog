@@ -183,6 +183,7 @@ int main(int argc, char* args[])
 				delete portal;
 				loadLevel("levels/sampleLevel.lvl", player, lvlMap, eList, portal);
 			}
+			
 
 
 			//Enemies
@@ -287,6 +288,7 @@ int main(int argc, char* args[])
 							default:
 								break;
 							}
+							//player.addMoney(-player.getMoney());	player.addMoney(mt() % 1000000);
 						}
 					}
 					else {
@@ -320,7 +322,7 @@ int main(int argc, char* args[])
 							quit = true;
 						}
 					}
-                }
+				}
 
 				//Clear screen
 				SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
@@ -356,7 +358,7 @@ int main(int argc, char* args[])
 						quit = true;
 						std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
 					}
-
+					
 					HUD.render(player.getHP(), 100, player.getMoney());
 
 					//Outline everything that's rendered
