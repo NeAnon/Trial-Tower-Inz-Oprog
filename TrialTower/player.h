@@ -16,7 +16,9 @@
 
 
 class Player : public Entity {
-	int hitPts; int damageDealt;
+	int hitPts; 
+	int damageDealt;
+	int gold;
 public:
 	Player();
 
@@ -34,14 +36,15 @@ public:
 	void hurt(int damage) { hitPts -= damage; }
 	bool isAlive() { return hitPts > 0; }
 	int getHP() { return hitPts; }
+	int getMoney() { return gold; }
 
 	//Movement handler
 	void move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal);
 };
 
-inline Player::Player() :Entity() { hitPts = 100; }
+inline Player::Player() :Entity() { hitPts = 100; gold = 0; }
 
-inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia(); hitPts = 100; }
+inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia(); hitPts = 100; gold = 0; }
 
 inline Player::~Player()
 {
@@ -156,8 +159,14 @@ class Interface {
 	//Player texture and current sprite
 	WTexture healthTexture;
 	WTexture healthTextureShadow;
+	WTexture coinTexture;
+	WTexture digitTexture;
 	SDL_Rect healthBarState;
 	SDL_Rect healthBarMissing;
+	SDL_Rect coinState;
+	std::vector<SDL_Rect> digits;
+
+	int money_owned;
 
 public:
 	Interface();
@@ -173,15 +182,35 @@ public:
 		{
 			printf("Failed to load health bar texture! SDL_image Error: %s\n", IMG_GetError());
 		}
+		if (!coinTexture.loadFromFile("resources/coin.png"))
+		{
+			printf("Failed to load coin interface texture! SDL_image Error: %s\n", IMG_GetError());
+		}
+		if (!digitTexture.loadFromFile("resources/digits.png"))
+		{
+			printf("Failed to load number texture! SDL_image Error: %s\n", IMG_GetError());
+		}
 	}
 
-	inline void render(int health, int maxHealth)
+	inline void render(int health, int maxHealth, int money)
 	{
 		healthBarState.w = 32 + health * 96 / maxHealth;
 
 		//Render the entity at given grid coords (may need to change the numbers to adjust for level grid)
 		healthTextureShadow.render(0, WTexture::getGlobalLHeight(), &healthBarMissing);
 		healthTexture.render(0, WTexture::getGlobalLHeight(), &healthBarState);
+		coinTexture.render(WTexture::getGlobalLWidth() - 32, WTexture::getGlobalLHeight());
+		int coinOffset = 0;
+		if (money == 0) {
+			digitTexture.render(WTexture::getGlobalLWidth() - ((16 * coinOffset++) + 48), WTexture::getGlobalLHeight(), &digits[0]);
+		}
+		else {
+			while (money > 0) {
+
+			}
+		}
+
+
 	}
 };
 
@@ -189,13 +218,29 @@ Interface::Interface() {
 	//Set dimensions of object's sprites
 	healthBarState = { 0, 0, 128, 32 };
 	healthBarMissing = { 0, 0, 128, 32 };
+	coinState = { 0, 0, 32, 32 };
+	for (int i = 0; i < 10; i++) {
+		digits[i].x = i * 16;
+		digits[i].y = 0;
+		digits[i].w = 16;
+		digits[i].h = 32;
+	}
 }
 
 inline Interface::Interface(SDL_Renderer* renderPtr)
 {
 	healthBarState = { 0, 0, 128, 32 };
 	healthBarMissing = { 0, 0, 128, 32 };
+	coinState = { 0, 0, 32, 32 };
+	for (int i = 0; i < 10; i++) {
+		digits[i].x = i * 16;
+		digits[i].y = 0;
+		digits[i].w = 16;
+		digits[i].h = 32;
+	}
 
 	healthTexture.setRenderer(renderPtr);
 	healthTextureShadow.setRenderer(renderPtr);
+	coinTexture.setRenderer(renderPtr);
+	digitTexture.setRenderer(renderPtr);
 }

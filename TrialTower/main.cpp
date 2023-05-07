@@ -357,7 +357,7 @@ int main(int argc, char* args[])
 						std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
 					}
 
-					HUD.render(player.getHP(), 100);
+					HUD.render(player.getHP(), 100, player.getMoney());
 
 					//Outline everything that's rendered
 					WTexture::outlineAll(gRenderer);
