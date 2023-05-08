@@ -223,6 +223,18 @@ public:
 	}
 };
 
+class potionSeller : public Enemy {
+public:
+	inline potionSeller() : Enemy() {}
+	inline potionSeller(int x, int y, SDL_Renderer* renderPtr = nullptr) : Enemy(x, y, renderPtr) {}
+	inline ~potionSeller() {}
+
+	int next_move(LevelMap& wallMap, int playerX, int playerY) { return 0; }
+	void move(int direction, int& dmgCounter, int playerX, int playerY) {}
+
+	std::string echo() { return "PotionSeller"; }
+};
+
 class enemyList {
 private:
 	std::vector<Enemy*> list;
@@ -278,6 +290,9 @@ inline void enemyList::addEnemy(int x, int y, std::string type = "Generic", int 
 	if (type == "Wander") {
 		newEnemy = new enemyWander(x, y, global_renderer);
 	}
+	if (type == "PotionSeller") {
+		newEnemy = new potionSeller(x, y, global_renderer);
+	}
 	list.push_back(newEnemy);
 }
 
@@ -300,16 +315,19 @@ inline bool enemyList::isAt(int x, int y) {
 inline void enemyList::attackSelected(int &money) {
 	if (enemySelected == -1) { return; }
 	if (list[enemySelected] != nullptr) {
-		money += list[enemySelected]->getBounty();
-		delete list[enemySelected];
-		list[enemySelected] = nullptr;
+		if (list[enemySelected]->echo() == "PotionSeller") { money -= 50; return; }
+		else {
+			money += list[enemySelected]->getBounty();
+			delete list[enemySelected];
+			list[enemySelected] = nullptr;
+		}
 	}
 }
 
 inline int enemyList::enemiesLeft() {
 	int counter = 0;
 	for (int i = 0; i < list.size(); i++) {
-		if (list[i] != nullptr) { counter++; }
+		if (list[i] != nullptr && list[i]->echo() != "PotionSeller") { counter++; }
 	}
 	//std::cout << counter << " enemies left\n";
 	return counter;

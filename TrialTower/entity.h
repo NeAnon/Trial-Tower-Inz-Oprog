@@ -82,7 +82,7 @@ public:
 		loadMedia("enemySpriteSheetTransparent.png");
 	}
 
-	std::string echo() { return "Enemy"; }
+	virtual std::string echo() { return "Enemy"; }
 
 	virtual int next_move(LevelMap& wallMap, int playerX, int playerY) = 0;//Direction of next move (function of movement logic)
 	virtual void move(int direction, int& dmgCounter, int playerX, int playerY) = 0;

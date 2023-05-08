@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 
+#include "item.h"
 #include "enemy.h"
 #include "levelMap.h"
 #include "player.h"
@@ -18,13 +19,13 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 	std::string buf;
 
 	file >> buf;
-	//std::cout << "xSize read: " << buf << "\n";
+	//std::cout << "xSize read: " << buf << "\n"; std::cout << "converting to int...\n";
 	xSize = std::stoi(buf);
 	file >> buf;
-	//std::cout << "ySize read: " << buf << "\n";
+	//std::cout << "ySize read: " << buf << "\n"; std::cout << "converting to int...\n";
 	ySize = std::stoi(buf);
 
-	//std::cout << "X: " << xSize << " Y: " << ySize << "\n\n";
+	std::cout << "X: " << xSize << " Y: " << ySize << "\n\n";
 
 	lvlMap.remakeLevel(xSize, ySize);
 
@@ -68,6 +69,9 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 					}
 					else if (buf[1] == 'W') {
 						eList.addEnemy(x, y, "Wander");
+					}
+					else if (buf[1] == 'M') {
+						eList.addEnemy(x, y, "PotionSeller");
 					}
 					else { eList.addEnemy(x, y); }
 				}

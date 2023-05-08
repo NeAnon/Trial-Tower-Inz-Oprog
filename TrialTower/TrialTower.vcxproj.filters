@@ -152,5 +152,6 @@
   <ItemGroup>
     <None Include="levels\sampleLevel.lvl" />
     <None Include="levels\sampleLevel2.lvl" />
+    <None Include="levels\introLevel.lvl" />
   </ItemGroup>
 </Project>

@@ -161,6 +161,7 @@ int main(int argc, char* args[])
 			int lvCounter = 0;
 
 			lvlList.reserve(100);
+			lvlList.push_back("levels/introLevel.lvl");
 			lvlList.push_back("levels/sampleLevel.lvl");
 			lvlList.push_back("levels/sampleLevel2.lvl");
 
@@ -365,7 +366,7 @@ int main(int argc, char* args[])
 						std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
 					}
 					
-					HUD.render(player.getHP(), 100, player.getMoney());
+					HUD.render(player);
 
 					//Outline everything that's rendered
 					WTexture::outlineAll(gRenderer);

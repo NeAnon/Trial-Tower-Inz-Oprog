@@ -17,8 +17,10 @@
 
 class Player : public Entity {
 	int hitPts; 
+	int maxHP;
 	int damageDealt;
 	int gold;
+	int hasPotion;
 public:
 	Player();
 
@@ -33,19 +35,21 @@ public:
 
 	std::string echo() { return "Player"; }
 
-	void hurt(int damage) { hitPts -= damage; }
+	void hurt(int damage) { hitPts -= damage; if (hitPts <= 0 && hasPotion) { hitPts = maxHP; hasPotion = false; std::cout << "Quaffed potion!\n";} }
 	bool isAlive() { return hitPts > 0; }
 	int getHP() { return hitPts; }
+	int getMaxHP() { return maxHP; }
 	void addMoney(int money) { gold += money; }
 	int getMoney() { return gold; }
+	bool hasPot() { return hasPotion; }
 	
 	//Movement handler
 	void move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal);
 };
 
-inline Player::Player() :Entity() { hitPts = 100; damageDealt = 10; gold = 0; }
+inline Player::Player() :Entity() { hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; }
 
-inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia();  hitPts = 100; damageDealt = 10; gold = 0; }
+inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia();  hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; }
 
 inline Player::~Player()
 {
@@ -153,6 +157,13 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 	default:
 		break;
 	}
+	if (collMoney == -50) {
+		if (hasPotion) { collMoney += 50; }
+		else {
+			if (gold >= 50) { hasPotion = true; std::cout << "Acquired potion!\n"; }
+			else { collMoney = 0; }
+		}
+	}
 	hurt(accDamage); addMoney(collMoney);
 	if (actionTaken) { std::cout << "Dealt " << damageDealt << " damage!\n"; }
 	//std::cout << "Next tile: " << wallMap.echoObj(nextX, nextY) << "\n";
@@ -194,10 +205,10 @@ public:
 		}
 	}
 
-	inline void render(int health, int maxHealth, int money)
+	inline void render(Player &player)
 	{
-		healthBarState.w = 32 + health * 96 / maxHealth;
-
+		healthBarState.w = 32 + player.getHP() * 96 / player.getMaxHP();
+		int money = player.getMoney();
 		//Render the entity at given grid coords (may need to change the numbers to adjust for level grid)
 		healthTextureShadow.render(0, WTexture::getGlobalLHeight(), &healthBarMissing);
 		healthTexture.render(0, WTexture::getGlobalLHeight(), &healthBarState);
@@ -213,7 +224,8 @@ public:
 			}
 		}
 
-
+		if (player.hasPot()) { healthBarMissing.w = 160; }
+		else { healthBarMissing.w = 128; }
 	}
 };
 

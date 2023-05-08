@@ -68,6 +68,7 @@
     <Image Include="resources\wall_rock.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="levels\introLevel.lvl" />
     <None Include="levels\sampleLevel.lvl" />
     <None Include="levels\sampleLevel2.lvl" />
   </ItemGroup>
