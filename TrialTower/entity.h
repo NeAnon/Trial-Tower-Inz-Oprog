@@ -69,6 +69,7 @@ inline Entity::~Entity()
 class Enemy : public Entity {
 private:
 	int health;
+	int bounty;
 public:
 	Enemy();
 
@@ -88,6 +89,7 @@ public:
 
 	void damage(int dealtDmg) { health -= dealtDmg; }
 	int getHP() { return health; }
+	int getBounty() { return bounty; }
 
 };
 
@@ -95,7 +97,7 @@ inline Enemy::Enemy() : Entity() {
 	printf("Enemy alive!\n");
 }
 
-inline Enemy::Enemy(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { health = 10; loadEnemyMedia(); }
+inline Enemy::Enemy(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { health = 10; bounty = 10; loadEnemyMedia(); }
 
 inline Enemy::~Enemy()
 {

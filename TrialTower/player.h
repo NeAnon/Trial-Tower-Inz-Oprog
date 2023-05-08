@@ -43,9 +43,9 @@ public:
 	void move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal);
 };
 
-inline Player::Player() :Entity() { hitPts = 100; gold = 0; }
+inline Player::Player() :Entity() { hitPts = 100; damageDealt = 10; gold = 0; }
 
-inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia(); hitPts = 100; gold = 0; }
+inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia();  hitPts = 100; damageDealt = 10; gold = 0; }
 
 inline Player::~Player()
 {
@@ -61,6 +61,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 
 	bool actionTaken = false;
 	int accDamage = 0;
+	int collMoney = 0;
 
 	//Depending on direction chosen, if within boundaries and not about to run into a wall, move the entity
 	switch (direction) {
@@ -68,7 +69,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		nextY--;
 		//Check for enemies
 		if (list.isAt(nextX, nextY)) {
-			list.attackSelected();
+			list.attackSelected(collMoney);
 			actionTaken = true;
 		}
 		if (!actionTaken) {
@@ -89,7 +90,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		nextX++;
 		//Check for enemies
 		if (list.isAt(nextX, nextY)) {
-			list.attackSelected();
+			list.attackSelected(collMoney);
 			actionTaken = true;
 		}
 		if (!actionTaken) {
@@ -111,7 +112,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		//Check for enemies
 		//Check for enemies
 		if (list.isAt(nextX, nextY)) {
-			list.attackSelected();
+			list.attackSelected(collMoney);
 			actionTaken = true;
 		}
 		if (!actionTaken) {
@@ -132,7 +133,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		nextX--;
 		//Check for enemies
 		if (list.isAt(nextX, nextY)) {
-			list.attackSelected();
+			list.attackSelected(collMoney);
 			actionTaken = true;
 		}
 		if (!actionTaken) {
@@ -152,7 +153,8 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 	default:
 		break;
 	}
-	hurt(accDamage);
+	hurt(accDamage); addMoney(collMoney);
+	if (actionTaken) { std::cout << "Dealt " << damageDealt << " damage!\n"; }
 	//std::cout << "Next tile: " << wallMap.echoObj(nextX, nextY) << "\n";
 }
 
@@ -167,7 +169,6 @@ class Interface {
 	SDL_Rect coinState;
 	std::vector<SDL_Rect> digits;
 
-	int money_owned;
 
 public:
 	Interface();

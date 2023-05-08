@@ -239,7 +239,7 @@ public:
 
 	bool isAt(int x, int y);
 
-	void attackSelected();
+	void attackSelected(int &money);
 
 	int enemiesLeft();
 
@@ -297,9 +297,10 @@ inline bool enemyList::isAt(int x, int y) {
 	}
 }
 
-inline void enemyList::attackSelected() {
+inline void enemyList::attackSelected(int &money) {
 	if (enemySelected == -1) { return; }
 	if (list[enemySelected] != nullptr) {
+		money += list[enemySelected]->getBounty();
 		delete list[enemySelected];
 		list[enemySelected] = nullptr;
 	}

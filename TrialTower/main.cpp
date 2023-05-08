@@ -321,7 +321,7 @@ int main(int argc, char* args[])
 						switch (action) {
 						case OPT_START:
 							delete portal;
-							loadLevel("levels/sampleLevel.lvl", player, lvlMap, eList, portal);
+							loadLevel(lvlList[lvCounter], player, lvlMap, eList, portal);
 							inLevel = true;
 							break;
 						case OPT_QUIT:

@@ -25,6 +25,7 @@
     <ClInclude Include="debugFuncs.h" />
     <ClInclude Include="enemy.h" />
     <ClInclude Include="entity.h" />
+    <ClInclude Include="item.h" />
     <ClInclude Include="levelMap.h" />
     <ClInclude Include="levelParser.h" />
     <ClInclude Include="object.h" />
