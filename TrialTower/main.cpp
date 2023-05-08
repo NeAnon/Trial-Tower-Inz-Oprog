@@ -157,7 +157,13 @@ int main(int argc, char* args[])
 			SDL_Event e;
 
 			bool inLevel = false;
-			int lvCounter = 1;
+			std::vector<std::string> lvlList;
+			int lvCounter = 0;
+
+			lvlList.reserve(100);
+			lvlList.push_back("levels/introLevel.lvl");
+			lvlList.push_back("levels/sampleLevel.lvl");
+			lvlList.push_back("levels/sampleLevel2.lvl");
 
 			//Set level and window sizes for WTexture to use
 			WTexture::setGlobalLSize(WINDOW_WIDTH, WINDOW_WIDTH);
@@ -181,9 +187,11 @@ int main(int argc, char* args[])
 
 			if (inLevel) {
 				delete portal;
-				loadLevel("levels/sampleLevel.lvl", player, lvlMap, eList, portal);
+				loadLevel(lvlList[lvCounter], player, lvlMap, eList, portal);
 			}
 
+			Uint8 testvar = 0;
+			SDL_Rect testrect = { (WTexture::getGlobalLWidth() / 2) - 32, WTexture::getGlobalLHeight() - 24, 64, 16 };
 
 			//Enemies
 		//	Enemy* enemy1 = new Enemy(10, 5, gRenderer);
@@ -287,6 +295,7 @@ int main(int argc, char* args[])
 							default:
 								break;
 							}
+							//player.addMoney(-player.getMoney());	player.addMoney(mt() % 1000000);
 						}
 					}
 					else {
@@ -313,14 +322,14 @@ int main(int argc, char* args[])
 						switch (action) {
 						case OPT_START:
 							delete portal;
-							loadLevel("levels/sampleLevel.lvl", player, lvlMap, eList, portal);
+							loadLevel(lvlList[lvCounter], player, lvlMap, eList, portal);
 							inLevel = true;
 							break;
 						case OPT_QUIT:
 							quit = true;
 						}
 					}
-                }
+				}
 
 				//Clear screen
 				SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
@@ -328,9 +337,9 @@ int main(int argc, char* args[])
 
 				if (inLevel) {
 					if (inLevel && portal->isFinished()) {
-						if (lvCounter == 1) {
-							loadLevel("levels/sampleLevel2.lvl", player, lvlMap, eList, portal); 
-							lvCounter++; 
+						lvCounter++; 
+						if (lvCounter < lvlList.size()) {
+							loadLevel(lvlList[lvCounter], player, lvlMap, eList, portal);
 						}
 						else {
 							std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
@@ -356,8 +365,8 @@ int main(int argc, char* args[])
 						quit = true;
 						std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
 					}
-
-					HUD.render(player.getHP(), 100);
+					
+					HUD.render(player);
 
 					//Outline everything that's rendered
 					WTexture::outlineAll(gRenderer);
@@ -365,6 +374,16 @@ int main(int argc, char* args[])
 				else {
 					titleScreen.render();
 				}
+
+				/*
+				* Code for a decreasing health bar that turns redder as health is drained:
+				* 
+				SDL_SetRenderDrawColor(gRenderer, 255 - testvar, testvar, 0, SDL_ALPHA_OPAQUE);
+				//SDL_RenderDrawRect(gRenderer, &testrect);
+				SDL_RenderFillRect(gRenderer, &testrect);
+				testvar--;
+				testrect.w = std::ceil((testvar * 1.0 / 255) * 64);
+				*/
 
 				//Update screen (must be after rendering everything prior!!!)
                 SDL_RenderPresent(gRenderer);

@@ -29,8 +29,29 @@
     <ClInclude Include="levelMap.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="wall.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="tile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="debugFuncs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="title.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="levelParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="entity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="enemy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="item.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -40,5 +61,97 @@
     <Image Include="resources\playerSpriteSheetTransparent.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="resources\coin.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\coin_ground.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\digits.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\dragon_left.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\dragon_right.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\enemySliderSheet.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\enemySpriteSheetTransparent.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\enemySpriteSheetTransparent-1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\enemySpriteSheetTransparent-2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\enemyWanderSheet.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\floor_wood.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\healthbar.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\healthbarMissing.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\Heart.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\hero_back.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\hero_front.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\hero_left.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\hero_right.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\objective.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\playerSpriteSheet2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\portal.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\quit_button.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\slime.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\spikeTrap.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\start_button.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\title_screen.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\wall_dark.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\wall_light.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\wall_rock.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="levels\sampleLevel.lvl" />
+    <None Include="levels\sampleLevel2.lvl" />
+    <None Include="levels\introLevel.lvl" />
   </ItemGroup>
 </Project>

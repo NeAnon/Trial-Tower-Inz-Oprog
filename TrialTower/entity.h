@@ -69,6 +69,7 @@ inline Entity::~Entity()
 class Enemy : public Entity {
 private:
 	int health;
+	int bounty;
 public:
 	Enemy();
 
@@ -81,13 +82,14 @@ public:
 		loadMedia("enemySpriteSheetTransparent.png");
 	}
 
-	std::string echo() { return "Enemy"; }
+	virtual std::string echo() { return "Enemy"; }
 
 	virtual int next_move(LevelMap& wallMap, int playerX, int playerY) = 0;//Direction of next move (function of movement logic)
 	virtual void move(int direction, int& dmgCounter, int playerX, int playerY) = 0;
 
 	void damage(int dealtDmg) { health -= dealtDmg; }
 	int getHP() { return health; }
+	int getBounty() { return bounty; }
 
 };
 
@@ -95,7 +97,7 @@ inline Enemy::Enemy() : Entity() {
 	printf("Enemy alive!\n");
 }
 
-inline Enemy::Enemy(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { health = 10; loadEnemyMedia(); }
+inline Enemy::Enemy(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { health = 10; bounty = 10; loadEnemyMedia(); }
 
 inline Enemy::~Enemy()
 {
