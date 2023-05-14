@@ -47,7 +47,7 @@ public:
 	bool hasPot() { return hasPotion; }
 	
 	//Movement handler
-	void move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal);
+	void move(int direction, LevelMap& wallMap, enemyList& list, InventoryList& invList, Portal* endPortal);
 };
 
 inline Player::Player() : Entity() { hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; }
@@ -58,7 +58,7 @@ inline Player::~Player()
 {
 }
 
-inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal)
+inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, InventoryList& invlist, Portal* endPortal)
 {
 	//Set clip square to entity's current direction (use case if irregular sprite sizes)
 	setClip(direction, 0);
@@ -74,94 +74,49 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 	switch (direction) {
 	case DIRECTION_UP:
 		nextY--;
-		//Check for enemies
-		if (list.isAt(nextX, nextY)) {
-			list.attackSelected(collMoney);
-			actionTaken = true;
-		}
-		if (!actionTaken) {
-			if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "Floor") { setY(nextY); }
-			else if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setY(nextY); }
-			else if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
-				setY(nextY); bool finished = true;
-				if (list.enemiesLeft() > 0) {
-					finished = false;
-				}
-				if (finished) {
-					endPortal->setFinishState(finished);
-				}
-			}
-		}
 		break;
 	case DIRECTION_RIGHT:
 		nextX++;
-		//Check for enemies
-		if (list.isAt(nextX, nextY)) {
-			list.attackSelected(collMoney);
-			actionTaken = true;
-		}
-		if (!actionTaken) {
-			if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "Floor") { setX(nextX); }
-			else if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setX(nextX); }
-			else if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "Portal") {
-				setX(nextX); bool finished = true;
-				if (list.enemiesLeft() > 0) {
-					finished = false;
-				}
-				if (finished) {
-					endPortal->setFinishState(finished);
-				}
-			}
-		}
 		break;
 	case DIRECTION_DOWN:
 		nextY++;
-		//Check for enemies
-		//Check for enemies
-		if (list.isAt(nextX, nextY)) {
-			list.attackSelected(collMoney);
-			actionTaken = true;
-		}
-		if (!actionTaken) {
-			if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "Floor") { setY(nextY); }
-			else if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setY(nextY); }
-			else if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "Portal") {
-				setY(nextY); bool finished = true;
-				if (list.enemiesLeft() > 0) {
-					finished = false;
-				}
-				if (finished) {
-					endPortal->setFinishState(finished);
-				}
-			}
-		}
 		break;
 	case DIRECTION_LEFT:
 		nextX--;
-		//Check for enemies
-		if (list.isAt(nextX, nextY)) {
-			list.attackSelected(collMoney);
-			actionTaken = true;
-		}
-		if (!actionTaken) {
-			if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "Floor") { setX(nextX); }
-			else if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setX(nextX); }
-			else if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
-				setX(nextX); bool finished = true;
-				if (list.enemiesLeft() > 0) {
-					finished = false;
-				}
-				if (finished) {
-					endPortal->setFinishState(finished);
-				}
-			}
-		}
 		break;
 	default:
 		break;
 	}
+
+	//Check for enemies
+	if (list.isAt(nextX, nextY)) {
+		list.attackSelected(collMoney);
+		actionTaken = true;
+	}
+	//Check if player can move
+	if (!actionTaken) {
+		if (nextX >= 0 && nextY >= 0 && nextX < wallMap.getXSize() && nextY < wallMap.getYSize()) 
+		{
+			if (wallMap.echoObj(nextX, nextY) == "Floor") { setX(nextX); setY(nextY); }
+			else if (wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setX(nextX); setY(nextY); }
+			else if (wallMap.echoObj(nextX, nextY) == "Portal") {
+				setX(nextX); setY(nextY); bool finished = true;
+				if (list.enemiesLeft() > 0) {
+					finished = false;
+				}
+				if (finished) {
+					endPortal->setFinishState(finished);
+				}
+			}
+		}
+	}
 	
-	if (collMoney < 0) { collMoney = 0; }
+
+
+	if (collMoney < 0) { collMoney = 0; } 
+
+
+
 #if 0
 	if (collMoney == -50) {
 		if (hasPotion) { collMoney += 50; }

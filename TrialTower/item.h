@@ -38,6 +38,8 @@ enum {
 	GLYPH_HEAL,		//8
 };
 
+
+
 class Item {
 private:
 	SDL_Rect itemSprite;
@@ -46,6 +48,7 @@ private:
 	std::string type;
 	int cost;
 	int effect;
+	int potency;
 public:
 	Item(bool e = false, std::string t = "Null", int c = 0) {
 		equipped = e; type = t; cost = c; effect = 0; itemSprite = { 0,0,32,32 }; workingTextSprite = { 0,0,8,8 };
@@ -53,10 +56,17 @@ public:
 
 	~Item() { std::cout << "Destroying item of type " << type << " and cost " << cost << " which " << (equipped ? "was" : "was not") << " equipped by the player.\n";}
 
+	void set_effect(int e) { effect = e; }
+	void set_potency(int m) { potency = m; }
+
 	virtual std::string echo_type() { return type; }
 	int echo_cost() { return cost; }
+
+
 	virtual int getIntMetadata() { return 0; }
 	virtual std::string getStrMetadata() { return ""; }
+	
+	
 	void render(int slot = 0, int posX = 0, int posY = 0) {
 		if (equipped) {
 			items.render(160 + (slot * 32), WTexture::getGlobalLHeight(), &itemSprite);
@@ -68,19 +78,28 @@ public:
 				itemGlyphs.render(posX * 32, (posY * 32) + 24, &workingTextSprite);
 				std::string displaycost = std::to_string(cost);
 				for (int i = 0; i < displaycost.size(); i++) {
-					workingTextSprite.x = (displaycost[i] - '0')*8;
+					workingTextSprite.x = (displaycost[i] - '0') * 8;
 					itemTxt.render((posX * 32) + (8 * (i + 1)), (posY * 32) + 24, &workingTextSprite);
+				}
+			}
+			if (effect) {
+				workingTextSprite.x = effect * 8;
+				itemGlyphs.render(posX * 32, posY * 32, &workingTextSprite);
+				std::string displaypotency = std::to_string(potency);
+				for (int i = 0; i < displaypotency.size(); i++) {
+					workingTextSprite.x = (displaypotency[i] - '0')*8;
+					itemTxt.render((posX * 32) + (8 * (i + 1)), posY * 32, &workingTextSprite);
 				}
 			}
 		}
 	}
 };
 
-class Potion : Item {
+class Potion : public Item {
 private:
-	bool heal;
+	int heal;
 public:
-	Potion(int c = 0, int h = 0, bool e = false, std::string t = "Potion") : Item(e, t, c) { heal = h; }
+	Potion(int c = 0, int h = 0, bool e = false, std::string t = "Potion") : Item(e, t, c) { heal = h; set_potency(heal); set_effect(GLYPH_HEAL); }
 
 	int getHealStrength() { return heal; }
 	int getIntMetadata(){ return getHealStrength(); }

@@ -281,7 +281,7 @@ int main(int argc, char* args[])
 								{
 								case SDLK_UP:
 									lvlMap.updateTiles();
-									player.move(DIRECTION_UP, lvlMap, eList, portal);
+									player.move(DIRECTION_UP, lvlMap, eList, allItems, portal);
 									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
 									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
 									player.hurt(pDamageAcc);
@@ -290,7 +290,7 @@ int main(int argc, char* args[])
 
 								case SDLK_DOWN:
 									lvlMap.updateTiles();
-									player.move(DIRECTION_DOWN, lvlMap, eList, portal);
+									player.move(DIRECTION_DOWN, lvlMap, eList, allItems, portal);
 									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
 									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
 									player.hurt(pDamageAcc);
@@ -299,7 +299,7 @@ int main(int argc, char* args[])
 
 								case SDLK_LEFT:
 									lvlMap.updateTiles();
-									player.move(DIRECTION_LEFT, lvlMap, eList, portal);
+									player.move(DIRECTION_LEFT, lvlMap, eList, allItems, portal);
 									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
 									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
 									player.hurt(pDamageAcc);
@@ -307,7 +307,7 @@ int main(int argc, char* args[])
 									break;
 								case SDLK_RIGHT:
 									lvlMap.updateTiles();
-									player.move(DIRECTION_RIGHT, lvlMap, eList, portal);
+									player.move(DIRECTION_RIGHT, lvlMap, eList, allItems, portal);
 									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
 									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
 									player.hurt(pDamageAcc);

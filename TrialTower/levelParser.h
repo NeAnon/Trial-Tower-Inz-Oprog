@@ -88,7 +88,7 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 	std::cout << "Level loaded, loading items...\n";
 	buf = "";
 	//format: type, cost, x, y
-	std::string type = ""; std::string cost;
+	std::string type = ""; std::string cost = ""; std::string potency = "";
 	std::string itemX = "", itemY = "";
 	while (!file.eof()) {
 		file >> buf;
@@ -100,14 +100,24 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 				else if (cost == "") {
 					cost = buf;
 				}
+				else if (potency == "") {
+					potency = buf;
+				}
 				else if (itemX == "") {
 					itemX = buf;
 				}
 				else {
 					itemY = buf;
-					Item* newItem = new Item(false, type, std::stoi(cost));
+					Item* newItem = nullptr;
+					switch(std::stoi(type)){
+					case 7:
+						newItem = new Potion(std::stoi(cost), std::stoi(potency));
+						break;
+					default:
+						newItem = new Item(false, type, std::stoi(cost));
+					}
 					invlist.addItem(stoi(itemX), stoi(itemY), newItem);
-					type = ""; cost = ""; itemX = ""; itemY = "";
+					type = ""; cost = ""; potency = ""; itemX = ""; itemY = "";
 				}
 		}
 	}
