@@ -23,7 +23,7 @@ class Player : public Entity {
 	int damageDealt;
 	int gold;
 	int hasPotion;
-	Potion potion;
+	//Potion potion;
 public:
 	Player();
 
@@ -160,6 +160,9 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 	default:
 		break;
 	}
+	
+	if (collMoney < 0) { collMoney = 0; }
+#if 0
 	if (collMoney == -50) {
 		if (hasPotion) { collMoney += 50; }
 		else {
@@ -167,6 +170,10 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 			else { collMoney = 0; }
 		}
 	}
+#endif // 0
+
+
+
 	hurt(accDamage); addMoney(collMoney);
 	if (actionTaken) { std::cout << "Dealt " << damageDealt << " damage!\n"; }
 	//std::cout << "Next tile: " << wallMap.echoObj(nextX, nextY) << "\n";
@@ -243,7 +250,9 @@ public:
 		else { healthBarMissing.w = 128; }
 
 		if (paused) {
-			pauseOverlay.render(0, 0);
+			if(paused) {
+				pauseOverlay.render(0, 0);
+			}
 			int HP = player.getHP();
 			if (HP == 0) {
 				digitTexture.render(64, WTexture::getGlobalLHeight(), &digits[0]);

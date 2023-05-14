@@ -9,7 +9,7 @@
 #include "levelMap.h"
 #include "player.h"
 
-void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyList& eList, SDL_Renderer* renderPtr) {
+void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyList& eList, InventoryList& invlist, SDL_Renderer* renderPtr) {
 	std::cout << "Beginning parse...\n";
 	std::ifstream file{ filepath };
 
@@ -31,6 +31,7 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 
 	bool playerAdded = false;
 	eList.clear();
+	invlist.clear();
 
 	std::cout << "Beginning read of rest of file...\n";
 	for (int y = 0; y < ySize; y++) {
@@ -83,6 +84,46 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 				lvlMap.insertObj(new Floor(x, y, renderPtr));
 			}
 		}
+	}
+	std::cout << "Level loaded, loading items...\n";
+	buf = "";
+	//format: type, cost, x, y
+	std::string type = ""; std::string cost;
+	std::string itemX = "", itemY = "";
+	while (!file.eof()) {
+		file >> buf;
+		if (buf != "")
+		{
+				if (type == "") {
+					type = buf;
+				}
+				else if (cost == "") {
+					cost = buf;
+				}
+				else if (itemX == "") {
+					itemX = buf;
+				}
+				else {
+					itemY = buf;
+					Item* newItem = new Item(false, type, std::stoi(cost));
+					invlist.addItem(stoi(itemX), stoi(itemY), newItem);
+					type = ""; cost = ""; itemX = ""; itemY = "";
+				}
+		}
+	}
+
+	if (type != "") {
+		if (cost == "") {
+			cost = "0";
+		}
+		if (itemX == "") {
+			itemX = "0";
+		}
+		if (itemY == "") {
+			itemY = "0";
+		}
+		Item* newItem = new Item(false, type, std::stoi(cost));
+		invlist.addItem(stoi(itemX), stoi(itemY), newItem);
 	}
 
 	std::cout << "Ending file read.\n";

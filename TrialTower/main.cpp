@@ -39,7 +39,7 @@ bool init();
 bool loadMedia();
 
 //Loads the sample level from path
-void loadLevel(std::string levelPath, Player& player, LevelMap& lvlMap, enemyList& eList, Portal*& portal);
+void loadLevel(std::string levelPath, Player& player, LevelMap& lvlMap, enemyList& eList, InventoryList &invList, Portal*& portal);
 
 //Frees media and shuts down SDL
 void close();
@@ -108,14 +108,14 @@ bool loadMedia()
     return success;
 }
 
-void loadLevel(std::string levelPath, Player &player, LevelMap &lvlMap, enemyList &eList, Portal*& portal) {
-	parseLevel(levelPath, player, lvlMap, eList, gRenderer);
+void loadLevel(std::string levelPath, Player &player, LevelMap &lvlMap, enemyList &eList, InventoryList &invlist, Portal*& portal) {
+	parseLevel(levelPath, player, lvlMap, eList, invlist, gRenderer);
 
 	//Set level size to level dims
 	WTexture::setGlobalLSize(lvlMap.getXSize() * 32, lvlMap.getYSize() * 32);
 	WTexture::calculate_renderRect();
 
-	//reload media for selected enemies
+	//reload media for selected enemiesS
 	eList.reloadMedia();
 
 	portal = lvlMap.getPortalPtr();
@@ -172,6 +172,7 @@ int main(int argc, char* args[])
 			WTexture::setGlobalWSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 			 
 			WTexture::calculate_renderRect();
+			preloadItems(gRenderer);
 
 			Title titleScreen(gRenderer);
 
@@ -182,13 +183,14 @@ int main(int argc, char* args[])
 			eList.setRenderer(gRenderer);
 			LevelMap lvlMap;
 			Portal* portal = new Portal(0, 0, gRenderer);
+			InventoryList allItems;
 			
 			Interface HUD(gRenderer);
 			HUD.loadInterface();
 
 			if (inLevel) {
 				delete portal;
-				loadLevel(lvlList[lvCounter], player, lvlMap, eList, portal);
+				loadLevel(lvlList[lvCounter], player, lvlMap, eList, allItems, portal);
 			}
 
 			Uint8 testvar = 0;
@@ -345,7 +347,7 @@ int main(int argc, char* args[])
 						switch (action) {
 						case OPT_START:
 							delete portal;
-							loadLevel(lvlList[lvCounter], player, lvlMap, eList, portal);
+							loadLevel(lvlList[lvCounter], player, lvlMap, eList, allItems, portal);
 							inLevel = true;
 							break;
 						case OPT_QUIT:
@@ -362,7 +364,7 @@ int main(int argc, char* args[])
 					if (inLevel && portal->isFinished()) {
 						lvCounter++; 
 						if (lvCounter < lvlList.size()) {
-							loadLevel(lvlList[lvCounter], player, lvlMap, eList, portal);
+							loadLevel(lvlList[lvCounter], player, lvlMap, eList, allItems, portal);
 						}
 						else {
 							std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
@@ -375,6 +377,8 @@ int main(int argc, char* args[])
 
 					//Render all remaining enemies
 					eList.renderAll();
+
+					allItems.render();
 
 					if (player.getX() == portal->getX() && player.getY() == portal->getY() && quit == false) {
 						portal->renderText(portal->getX(), portal->getY(), GAME_WIDTH, GAME_HEIGHT);

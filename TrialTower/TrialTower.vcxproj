@@ -53,6 +53,8 @@
     <Image Include="resources\hero_front.png" />
     <Image Include="resources\hero_left.png" />
     <Image Include="resources\hero_right.png" />
+    <Image Include="resources\itemGlyphs.png" />
+    <Image Include="resources\itemText.png" />
     <Image Include="resources\objective.png" />
     <Image Include="resources\pauseOverlay.png" />
     <Image Include="resources\playerSpriteSheet.png" />
@@ -65,6 +67,7 @@
     <Image Include="resources\spikeTrap.png" />
     <Image Include="resources\start_button.png" />
     <Image Include="resources\title_screen.png" />
+    <Image Include="resources\unknownItem.png" />
     <Image Include="resources\wall_dark.png" />
     <Image Include="resources\wall_light.png" />
     <Image Include="resources\wall_rock.png" />
