@@ -292,6 +292,10 @@ int main(int argc, char* args[])
 								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
 								break;
 
+							case SDLK_b:
+								player.changeBoots();
+								break;
+
 							default:
 								break;
 							}

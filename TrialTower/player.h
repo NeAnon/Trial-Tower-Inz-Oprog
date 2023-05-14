@@ -21,6 +21,7 @@ class Player : public Entity {
 	int damageDealt;
 	int gold;
 	int hasPotion;
+	bool hasBoots = false;
 public:
 	Player();
 
@@ -42,6 +43,13 @@ public:
 	void addMoney(int money) { gold += money; }
 	int getMoney() { return gold; }
 	bool hasPot() { return hasPotion; }
+	void changeBoots() {
+		hasBoots = !hasBoots;
+	}
+	bool hasBoot() {
+		return hasBoots;
+	}
+	
 	
 	//Movement handler
 	void move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal);
@@ -57,6 +65,10 @@ inline Player::~Player()
 
 inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal)
 {
+	bool hasBoots = hasBoot();
+
+	int moveOffset = hasBoots ? 2 : 1;
+
 	//Set clip square to entity's current direction (use case if irregular sprite sizes)
 	setClip(direction, 0);
 
@@ -70,7 +82,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 	//Depending on direction chosen, if within boundaries and not about to run into a wall, move the entity
 	switch (direction) {
 	case DIRECTION_UP:
-		nextY--;
+		nextY-=moveOffset;
 		//Check for enemies
 		if (list.isAt(nextX, nextY)) {
 			list.attackSelected(collMoney);
@@ -91,7 +103,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		}
 		break;
 	case DIRECTION_RIGHT:
-		nextX++;
+		nextX+=moveOffset;
 		//Check for enemies
 		if (list.isAt(nextX, nextY)) {
 			list.attackSelected(collMoney);
@@ -112,7 +124,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		}
 		break;
 	case DIRECTION_DOWN:
-		nextY++;
+		nextY+=moveOffset;
 		//Check for enemies
 		//Check for enemies
 		if (list.isAt(nextX, nextY)) {
@@ -134,7 +146,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 		}
 		break;
 	case DIRECTION_LEFT:
-		nextX--;
+		nextX-=moveOffset;
 		//Check for enemies
 		if (list.isAt(nextX, nextY)) {
 			list.attackSelected(collMoney);
