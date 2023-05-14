@@ -11,6 +11,8 @@
 #include "entity.h"
 #include "enemy.h"
 
+#include "item.h"
+
 //Entities will have to take into account map layout
 #include "levelMap.h"
 
@@ -21,6 +23,7 @@ class Player : public Entity {
 	int damageDealt;
 	int gold;
 	int hasPotion;
+	Potion potion;
 public:
 	Player();
 
@@ -47,7 +50,7 @@ public:
 	void move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal);
 };
 
-inline Player::Player() :Entity() { hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; }
+inline Player::Player() : Entity() { hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; }
 
 inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia();  hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; }
 
@@ -175,6 +178,8 @@ class Interface {
 	WTexture healthTextureShadow;
 	WTexture coinTexture;
 	WTexture digitTexture;
+	WTexture playerInventory;
+	WTexture pauseOverlay;
 	SDL_Rect healthBarState;
 	SDL_Rect healthBarMissing;
 	SDL_Rect coinState;
@@ -186,7 +191,7 @@ public:
 	Interface(SDL_Renderer * renderPtr);
 
 	void loadInterface() {
-		//Load entity texture	
+		//Load entity texture
 		if (!healthTexture.loadFromFile("resources/healthbar.png"))
 		{
 			printf("Failed to load health bar texture! SDL_image Error: %s\n", IMG_GetError());
@@ -203,15 +208,25 @@ public:
 		{
 			printf("Failed to load number texture! SDL_image Error: %s\n", IMG_GetError());
 		}
+		if (!playerInventory.loadFromFile("resources/Player_Inventory.png"))
+		{
+			printf("Failed to load inventory texture! SDL_image Error: %s\n", IMG_GetError());
+		}
+		if (!pauseOverlay.loadFromFile("resources/pauseOverlay.png"))
+		{
+			printf("Failed to load pause texture! SDL_image Error: %s\n", IMG_GetError());
+		}
 	}
 
-	inline void render(Player &player)
+	inline void render(Player& player, bool paused)
 	{
+		//interfaceBG.render(0, WTexture::getGlobalLHeight());
 		healthBarState.w = 32 + player.getHP() * 96 / player.getMaxHP();
 		int money = player.getMoney();
 		//Render the entity at given grid coords (may need to change the numbers to adjust for level grid)
 		healthTextureShadow.render(0, WTexture::getGlobalLHeight(), &healthBarMissing);
 		healthTexture.render(0, WTexture::getGlobalLHeight(), &healthBarState);
+		playerInventory.render(160, WTexture::getGlobalLHeight());
 		coinTexture.render(WTexture::getGlobalLWidth() - 32, WTexture::getGlobalLHeight());
 		int coinOffset = 0;
 		if (money == 0) {
@@ -226,6 +241,21 @@ public:
 
 		if (player.hasPot()) { healthBarMissing.w = 160; }
 		else { healthBarMissing.w = 128; }
+
+		if (paused) {
+			pauseOverlay.render(0, 0);
+			int HP = player.getHP();
+			if (HP == 0) {
+				digitTexture.render(64, WTexture::getGlobalLHeight(), &digits[0]);
+			}
+			else {
+				int HPOffset = 80 + std::trunc(std::log10(std::abs(HP))-1)*8;
+				while (HP > 0) { 
+					digitTexture.render(HPOffset, WTexture::getGlobalLHeight(), &digits[HP % 10]);
+					HP /= 10; HPOffset -= 16;
+				}
+			}
+		}
 	}
 };
 
@@ -260,4 +290,6 @@ inline Interface::Interface(SDL_Renderer* renderPtr)
 	healthTextureShadow.setRenderer(renderPtr);
 	coinTexture.setRenderer(renderPtr);
 	digitTexture.setRenderer(renderPtr);
+	playerInventory.setRenderer(renderPtr);
+	pauseOverlay.setRenderer(renderPtr);
 }

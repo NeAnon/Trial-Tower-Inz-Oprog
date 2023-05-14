@@ -152,9 +152,10 @@ int main(int argc, char* args[])
 		{
 			//Main loop flag
 			bool quit = false;
-
+			
 			//Event handler
 			SDL_Event e;
+			bool paused = false;
 
 			bool inLevel = false;
 			std::vector<std::string> lvlList;
@@ -249,53 +250,75 @@ int main(int argc, char* args[])
 						}
 					}
 					//User presses a key
+					//Checking if the user is in the game
 					if (inLevel) {
-						if (e.type == SDL_KEYDOWN)
-						{
-							int pDamageAcc = 0;
-							//Move player based on key press
-							switch (e.key.keysym.sym)
+						//Checking if the user has paused the game
+						if (paused) {
+							//If so, handle inventory (?)
+							if (e.type == SDL_KEYDOWN)
 							{
-							case SDLK_UP:
-								lvlMap.updateTiles();
-								player.move(DIRECTION_UP, lvlMap, eList, portal);
-								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
-								player.hurt(pDamageAcc);
-								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-								break;
-
-							case SDLK_DOWN:
-								lvlMap.updateTiles();
-								player.move(DIRECTION_DOWN, lvlMap, eList, portal);
-								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
-								player.hurt(pDamageAcc);
-								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-								break;
-
-							case SDLK_LEFT:
-								lvlMap.updateTiles();
-								player.move(DIRECTION_LEFT, lvlMap, eList, portal);
-								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
-								player.hurt(pDamageAcc);
-								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-								break;
-
-							case SDLK_RIGHT:
-								lvlMap.updateTiles();
-								player.move(DIRECTION_RIGHT, lvlMap, eList, portal);
-								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
-								player.hurt(pDamageAcc);
-								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-								break;
-
-							default:
-								break;
+								switch (e.key.keysym.sym)
+								{
+								case SDLK_ESCAPE:
+									paused = false;
+									break;
+								default:
+									break;
+								}
 							}
-							//player.addMoney(-player.getMoney());	player.addMoney(mt() % 1000000);
+						}
+						else
+						{
+							//Otherwise, continue gameplay
+							if (e.type == SDL_KEYDOWN)
+							{
+								//Accumulated damage (player)
+								int pDamageAcc = 0;
+								//Move player based on key press
+								switch (e.key.keysym.sym)
+								{
+								case SDLK_UP:
+									lvlMap.updateTiles();
+									player.move(DIRECTION_UP, lvlMap, eList, portal);
+									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
+									player.hurt(pDamageAcc);
+									if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+									break;
+
+								case SDLK_DOWN:
+									lvlMap.updateTiles();
+									player.move(DIRECTION_DOWN, lvlMap, eList, portal);
+									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
+									player.hurt(pDamageAcc);
+									if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+									break;
+
+								case SDLK_LEFT:
+									lvlMap.updateTiles();
+									player.move(DIRECTION_LEFT, lvlMap, eList, portal);
+									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
+									player.hurt(pDamageAcc);
+									if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+									break;
+								case SDLK_RIGHT:
+									lvlMap.updateTiles();
+									player.move(DIRECTION_RIGHT, lvlMap, eList, portal);
+									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
+									player.hurt(pDamageAcc);
+									if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+									break;
+								case SDLK_ESCAPE:
+									paused = true;
+									break;
+								default:
+									break;
+								}
+								//player.addMoney(-player.getMoney());	player.addMoney(mt() % 1000000);
+							}
 						}
 					}
 					else {
@@ -366,7 +389,7 @@ int main(int argc, char* args[])
 						std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
 					}
 					
-					HUD.render(player);
+					HUD.render(player, paused);
 
 					//Outline everything that's rendered
 					WTexture::outlineAll(gRenderer);
@@ -384,6 +407,9 @@ int main(int argc, char* args[])
 				testvar--;
 				testrect.w = std::ceil((testvar * 1.0 / 255) * 64);
 				*/
+
+				if (paused) {
+				}
 
 				//Update screen (must be after rendering everything prior!!!)
                 SDL_RenderPresent(gRenderer);

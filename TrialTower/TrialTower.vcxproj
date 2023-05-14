@@ -54,9 +54,11 @@
     <Image Include="resources\hero_left.png" />
     <Image Include="resources\hero_right.png" />
     <Image Include="resources\objective.png" />
+    <Image Include="resources\pauseOverlay.png" />
     <Image Include="resources\playerSpriteSheet.png" />
     <Image Include="resources\playerSpriteSheet2.png" />
     <Image Include="resources\playerSpriteSheetTransparent.png" />
+    <Image Include="resources\Player_Inventory.png" />
     <Image Include="resources\portal.png" />
     <Image Include="resources\quit_button.png" />
     <Image Include="resources\slime.png" />

@@ -148,6 +148,12 @@
     <Image Include="resources\wall_rock.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="resources\Player_Inventory.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\pauseOverlay.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="levels\sampleLevel.lvl" />
