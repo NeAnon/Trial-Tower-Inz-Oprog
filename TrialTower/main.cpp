@@ -319,6 +319,7 @@ int main(int argc, char* args[])
 								default:
 									break;
 								}
+								ShowItemRenders = false;
 								//player.addMoney(-player.getMoney());	player.addMoney(mt() % 1000000);
 							}
 						}
@@ -378,7 +379,6 @@ int main(int argc, char* args[])
 					//Render all remaining enemies
 					eList.renderAll();
 
-					allItems.render();
 
 					if (player.getX() == portal->getX() && player.getY() == portal->getY() && quit == false) {
 						portal->renderText(portal->getX(), portal->getY(), GAME_WIDTH, GAME_HEIGHT);
@@ -393,6 +393,8 @@ int main(int argc, char* args[])
 						std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
 					}
 					
+					allItems.render();
+					if (ShowItemRenders) { ShowItemRenders = false; }
 					HUD.render(player, paused);
 
 					//Outline everything that's rendered

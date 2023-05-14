@@ -110,14 +110,15 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 					itemY = buf;
 					Item* newItem = nullptr;
 					switch(std::stoi(type)){
-					case 7:
+					case TYPE_POTN:
 						newItem = new Potion(std::stoi(cost), std::stoi(potency));
 						break;
 					default:
-						newItem = new Item(false, type, std::stoi(cost));
+						newItem = new Item(false, std::stoi(type), std::stoi(cost));
 					}
 					invlist.addItem(stoi(itemX), stoi(itemY), newItem);
 					type = ""; cost = ""; potency = ""; itemX = ""; itemY = "";
+					buf.clear();
 				}
 		}
 	}
@@ -126,13 +127,16 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 		if (cost == "") {
 			cost = "0";
 		}
+		if (potency == "") {
+			potency = "0";
+		}
 		if (itemX == "") {
 			itemX = "0";
 		}
 		if (itemY == "") {
 			itemY = "0";
 		}
-		Item* newItem = new Item(false, type, std::stoi(cost));
+		Item* newItem = new Item(false, std::stoi(type), std::stoi(cost));
 		invlist.addItem(stoi(itemX), stoi(itemY), newItem);
 	}
 

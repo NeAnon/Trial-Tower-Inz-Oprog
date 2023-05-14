@@ -22,8 +22,16 @@ class Player : public Entity {
 	int maxHP;
 	int damageDealt;
 	int gold;
-	int hasPotion;
-	//Potion potion;
+	// Weapon		weapon;
+	// Shield		shield;
+	// Helmet		helmet;
+	// Chestplate	chestplate;
+	// Leggings		leggings;
+	// Boots		boots;
+	Potion		potion;
+	// Ring			ringLeft;
+	// Ring			ringRight;
+	//
 public:
 	Player();
 
@@ -38,14 +46,36 @@ public:
 
 	std::string echo() { return "Player"; }
 
-	void hurt(int damage) { hitPts -= damage; if (hitPts <= 0 && hasPotion) { hitPts = maxHP; hasPotion = false; std::cout << "Quaffed potion!\n";} }
+	void hurt(int damage) { hitPts -= damage; if (hitPts <= 0) { hitPts = maxHP; std::cout << "Quaffed potion!\n";} }
 	bool isAlive() { return hitPts > 0; }
 	int getHP() { return hitPts; }
 	int getMaxHP() { return maxHP; }
 	void addMoney(int money) { gold += money; }
 	int getMoney() { return gold; }
-	bool hasPot() { return hasPotion; }
+	bool hasItem(int i){
+		switch (i) {
+		case 7:
+			return potion.isEquipped();
+		default:
+			return false;
+		}
+	}
+	Item* getItem(int i) {
+		switch (i) {
+		case 7:
+			return &potion;
+		default:
+			return nullptr;
+		}
+	}
 	
+	void replaceItem(Item*& destItem, Item& templateItem) {
+		destItem->set_cost(templateItem.echo_cost());
+		destItem->set_effect(templateItem.echo_effect());
+		destItem->set_equipped(templateItem.isEquipped());
+		destItem->set_potency(templateItem.echo_potency());
+	}
+
 	//Movement handler
 	void move(int direction, LevelMap& wallMap, enemyList& list, InventoryList& invList, Portal* endPortal);
 };
@@ -93,6 +123,46 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Inve
 		list.attackSelected(collMoney);
 		actionTaken = true;
 	}
+	
+	Inventory tempInv; Item* tempItem = nullptr; int currItem = 0;
+	Inventory* sourceInv = invlist.isInvAt(nextX, nextY);
+	
+	if (sourceInv) {
+		//Take all items you can from the inventory
+		sourceInv->giveItems(tempInv, gold);
+
+		if (tempInv.empty()) { actionTaken = true; }
+		//If no items were taken, pass, otherwise...
+		else {
+			for (int i = 0; i < tempInv.size(); i++) {
+				//For every item, check if it can be equipped.
+				//If it can copy its stats and set a new item in the slot.
+				//If the slot is occupied, save the stats and put the item back into the ptr we are pulling from.
+				tempItem = tempInv.itemAt(i);
+				currItem = tempItem->echo_type();
+
+				switch (currItem) {
+				case TYPE_POTN:
+					if (potion.isEquipped()) {
+						sourceInv->addItem(new Potion(0, potion.echo_potency(), false));
+						potion = Potion(0, tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					else {
+						//Set potion params
+						potion = Potion(0, tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					break;
+				default:
+					break;
+				}
+			}
+			if (sourceInv->empty()) { invlist.removeAt(nextX, nextY); }
+		}
+	}
 	//Check if player can move
 	if (!actionTaken) {
 		if (nextX >= 0 && nextY >= 0 && nextX < wallMap.getXSize() && nextY < wallMap.getYSize()) 
@@ -110,9 +180,6 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Inve
 			}
 		}
 	}
-	
-
-
 	if (collMoney < 0) { collMoney = 0; } 
 
 
@@ -201,9 +268,6 @@ public:
 			}
 		}
 
-		if (player.hasPot()) { healthBarMissing.w = 160; }
-		else { healthBarMissing.w = 128; }
-
 		if (paused) {
 			if(paused) {
 				pauseOverlay.render(0, 0);
@@ -218,6 +282,12 @@ public:
 					digitTexture.render(HPOffset, WTexture::getGlobalLHeight(), &digits[HP % 10]);
 					HP /= 10; HPOffset -= 16;
 				}
+			}
+		}
+
+		for (int i = 1; i <= 9; i++) {
+			if (player.hasItem(i)) {
+				player.getItem(i)->render(i);
 			}
 		}
 	}

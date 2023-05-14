@@ -9,7 +9,7 @@ static WTexture itemGlyphs;
 
 static void preloadItems(SDL_Renderer* renderPtr) {
 	items.setRenderer(renderPtr);	
-	if (!items.loadFromFile("resources/unknownItem.png"))
+	if (!items.loadFromFile("resources/itemList.png"))
 	{
 		printf("Failed to load item texture! SDL_image Error: %s\n", IMG_GetError());
 	}
@@ -38,38 +38,64 @@ enum {
 	GLYPH_HEAL,		//8
 };
 
-
+enum {
+	TYPE_NULL = 0,	//0
+	TYPE_WEAP,		//1
+	TYPE_SHLD,		//2
+	TYPE_HELM,		//3
+	TYPE_CHST,		//4
+	TYPE_LEGS,		//5
+	TYPE_BOOT,		//6
+	TYPE_POTN,		//7
+	TYPE_RING,		//8
+};
 
 class Item {
 private:
 	SDL_Rect itemSprite;
 	SDL_Rect workingTextSprite;
 	bool equipped;
-	std::string type;
+	
+	int type;
 	int cost;
 	int effect;
 	int potency;
 public:
-	Item(bool e = false, std::string t = "Null", int c = 0) {
+	Item(bool e = false, int t = 0, int c = 0) {
 		equipped = e; type = t; cost = c; effect = 0; itemSprite = { 0,0,32,32 }; workingTextSprite = { 0,0,8,8 };
 	std::cout << "Creating item of type " << type << " and cost " << cost << " which " << (equipped ? "was" : "was not") << " equipped by the player.\n"; }
 
 	~Item() { std::cout << "Destroying item of type " << type << " and cost " << cost << " which " << (equipped ? "was" : "was not") << " equipped by the player.\n";}
 
+	void set_sprite(int x = -1, int y = -1) { if (x >= 0) { itemSprite.x = x * 32; } if (y >= 0) { itemSprite.y = y * 32; } }
 	void set_effect(int e) { effect = e; }
 	void set_potency(int m) { potency = m; }
+	void set_equipped(bool eq) { equipped = eq; }
+	void set_cost(int c) { cost = c; }
 
-	virtual std::string echo_type() { return type; }
+	virtual int echo_type() { return type; }
+	int echo_effect() { return effect; }
 	int echo_cost() { return cost; }
+	int echo_potency() { return potency; }
+	bool isEquipped() { return equipped; }
 
 
 	virtual int getIntMetadata() { return 0; }
 	virtual std::string getStrMetadata() { return ""; }
 	
 	
-	void render(int slot = 0, int posX = 0, int posY = 0) {
+	void render(int slot = 0, int posX = 0, int posY = 0)	 {
 		if (equipped) {
-			items.render(160 + (slot * 32), WTexture::getGlobalLHeight(), &itemSprite);
+			items.render(160 + ((slot-1) * 32), WTexture::getGlobalLHeight(), &itemSprite);
+			if (effect) {
+				workingTextSprite.x = effect * 8;
+				itemGlyphs.render(160 + ((slot - 1) * 32), WTexture::getGlobalLHeight(), &workingTextSprite);
+				std::string displaypotency = std::to_string(potency);
+				for (int i = 0; i < displaypotency.size(); i++) {
+					workingTextSprite.x = (displaypotency[i] - '0') * 8;
+					itemTxt.render(160 + ((slot - 1) * 32) + (8 * (i + 1)), WTexture::getGlobalLHeight(), &workingTextSprite);
+				}
+			}
 		}
 		else
 		{
@@ -99,11 +125,14 @@ class Potion : public Item {
 private:
 	int heal;
 public:
-	Potion(int c = 0, int h = 0, bool e = false, std::string t = "Potion") : Item(e, t, c) { heal = h; set_potency(heal); set_effect(GLYPH_HEAL); }
+	Potion(int c = 0, int h = 0, bool e = false, int t = TYPE_POTN) : Item(e, t, c) { heal = h; set_potency(heal); set_effect(GLYPH_HEAL); set_sprite(7); }
 
 	int getHealStrength() { return heal; }
 	int getIntMetadata(){ return getHealStrength(); }
+
 };
+
+static bool ShowItemRenders = false;
 
 class Inventory {
 //Not a classic inventory, more like the list of items on the ground 
@@ -123,16 +152,60 @@ public:
 
 	int getX() { return posX; }
 	int getY() { return posY; }
+	bool empty() { 
+		bool empty = true;
+		for (int i = 0; i < items.size(); i++) {
+			if (items[i] != nullptr){
+				std::cout << "Item at " << i << "\n";
+				empty = false;
+			}
+		}
+		return empty;
+	}
+	int size() { return items.size(); }
+	
 	void addItem(Item* item) {
 		items.push_back(item);
-		std::cout	<< "Pushed item of type " << items.back()->echo_type()
-					<< " and cost " << items.back()->echo_cost()
-					<< " into inventory (" << posX << "," << posY << ")\n";
+		if(items.back() != nullptr && !items.empty())
+		{
+			std::cout << "Pushed item of type " << items.back()->echo_type()
+				<< " and cost " << items.back()->echo_cost()
+				<< " into inventory (" << posX << "," << posY << ")\n";
+		}
+	}
+	
+	Item* itemAt(int i) {
+		if (i < items.size() && i >= 0) {
+			return items[i];
+		}
+	}
+
+	void removeItem(int index) {
+		if (index >= 0 && index < items.size() && items[index] != nullptr) {
+			delete items[index];
+			items[index] = nullptr;
+		}
+	}
+
+	void giveItems(Inventory &targetInv, int &ownedGold) {
+		for (int i = 0; i < items.size(); i++) {
+			if(items[i] != nullptr){
+				if (items[i]->echo_cost() <= ownedGold) {
+					//Buy item (this has no effect if cost == 0)
+					ownedGold -= items[i]->echo_cost(); items[i]->set_cost(0);
+
+					//Add item to target and remove it from self
+					targetInv.addItem(items[i]); items[i] = nullptr;
+				}
+			}
+		}
 	}
 
 	void callAllItems() {
 		for (int i = 0; i < items.size(); i++) {
-			items[i]->echo_type();
+			if(items[i]) {
+				items[i]->echo_type();
+			}
 		}
 	}
 
@@ -141,6 +214,9 @@ public:
 			if(items[i] != nullptr)
 			{
 				items[i]->render(0, posX, posY);
+				if(ShowItemRenders){
+					std::cout << "Rendered item " << i << "from inventory at " << posX << ", " << posY << "!\n;";
+				}
 			}
 		}
 	}
@@ -173,15 +249,39 @@ public:
 		}
 		std::cout << "Creating inventory at (" << posX << "," << posY << ")\n";
 		inventories.push_back(new Inventory(posX, posY));
+		std::cout << "Inventory count now at: " << inventories.size() << "\n";
 		inventories.back()->addItem(item);
 		return;
+	}
+
+	Inventory* isInvAt(int x, int y) {
+		for (int i = 0; i < inventories.size(); i++) {
+			if (inventories[i] != nullptr) {
+				std::cout << "Checking inventory at (" << x << "," << y << ")\n";
+				if (inventories[i]->getX() == x && inventories[i]->getY() == y) {
+					return inventories[i];
+				}
+			}
+		}
+		return nullptr;
+	}
+
+	void removeAt(int x, int y) {
+		std::cout << "removeAt triggered\n";
+		for (int i = 0; i < inventories.size(); i++) {
+			if (inventories[i] != nullptr && inventories[i]->getX() == x && inventories[i]->getY() == y)
+			{
+				delete inventories[i];
+				inventories[i] = nullptr;
+				std::cout << "Deleting Inventory (" << x << "," << y << ")\n";
+			}
+		}
 	}
 
 	void render() {
 		for (int i = 0; i < inventories.size(); i++) {
 			if (inventories[i] != nullptr) {
 				inventories[i]->render();
-				return;
 			}
 		}
 	}

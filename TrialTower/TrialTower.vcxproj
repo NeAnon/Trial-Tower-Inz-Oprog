@@ -54,7 +54,9 @@
     <Image Include="resources\hero_left.png" />
     <Image Include="resources\hero_right.png" />
     <Image Include="resources\itemGlyphs.png" />
+    <Image Include="resources\itemList.png" />
     <Image Include="resources\itemText.png" />
+    <Image Include="resources\itemTextBold.png" />
     <Image Include="resources\objective.png" />
     <Image Include="resources\pauseOverlay.png" />
     <Image Include="resources\playerSpriteSheet.png" />
