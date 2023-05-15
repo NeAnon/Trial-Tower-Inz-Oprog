@@ -36,7 +36,6 @@ class Player : public Entity {
 
 	std::vector<int> activeEffects;
 	std::vector<int> effectPotencies;
-
 public:
 	Player();
 
@@ -133,6 +132,10 @@ inline Player::~Player()
 
 inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, InventoryList& invlist, Portal* endPortal)
 {
+	bool hasBoots = hasBoot();
+
+	int moveOffset = hasBoots ? 2 : 1;
+
 	//Set clip square to entity's current direction (use case if irregular sprite sizes)
 	setClip(direction, 0);
 
@@ -236,6 +239,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Inve
 				}
 			}
 			if (sourceInv->empty()) { invlist.removeAt(nextX, nextY); }
+
 		}
 	}
 	//Check if player can move

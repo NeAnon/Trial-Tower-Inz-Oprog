@@ -321,6 +321,7 @@ int main(int argc, char* args[])
 								}
 								ShowItemRenders = false;
 								//player.addMoney(-player.getMoney());	player.addMoney(mt() % 1000000);
+
 							}
 						}
 					}
