@@ -378,6 +378,7 @@ int main(int argc, char* args[])
 
 					//Render all remaining enemies
 					eList.renderAll();
+					allItems.render();
 
 
 					if (player.getX() == portal->getX() && player.getY() == portal->getY() && quit == false) {
@@ -393,7 +394,6 @@ int main(int argc, char* args[])
 						std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
 					}
 					
-					allItems.render();
 					if (ShowItemRenders) { ShowItemRenders = false; }
 					HUD.render(player, paused);
 

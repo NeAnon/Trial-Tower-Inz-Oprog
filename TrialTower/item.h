@@ -36,6 +36,12 @@ enum {
 	GLYPH_DEF,		//6
 	GLYPH_HP,		//7
 	GLYPH_HEAL,		//8
+	GLYPH_SPD,
+	GLYPH_JUMP,
+	GLYPH_PHASE,
+	GLYPH_INVIN,
+	
+	EFFECT_COUNT,	//n
 };
 
 enum {
@@ -61,8 +67,8 @@ private:
 	int effect;
 	int potency;
 public:
-	Item(bool e = false, int t = 0, int c = 0) {
-		equipped = e; type = t; cost = c; effect = 0; itemSprite = { 0,0,32,32 }; workingTextSprite = { 0,0,8,8 };
+	Item(bool e = false, int t = 0, int c = 0, int p = 0) {
+		equipped = e; type = t; cost = c; potency = p; effect = 0; itemSprite = { 0,0,32,32 }; workingTextSprite = { 0,0,8,8 };
 	std::cout << "Creating item of type " << type << " and cost " << cost << " which " << (equipped ? "was" : "was not") << " equipped by the player.\n"; }
 
 	~Item() { std::cout << "Destroying item of type " << type << " and cost " << cost << " which " << (equipped ? "was" : "was not") << " equipped by the player.\n";}
@@ -119,6 +125,17 @@ public:
 			}
 		}
 	}
+};
+
+class Boots : public Item {
+private:
+	bool active;
+public:
+	Boots(int c = 0, int ef = 0, int p = 0, bool e = false, int t = TYPE_BOOT) : Item(e, t, c, p) { set_effect(ef); set_sprite(6); active = true; }
+
+	//int getHealStrength() { return heal; }
+	//int getIntMetadata() { return getHealStrength(); }
+
 };
 
 class Potion : public Item {

@@ -27,11 +27,16 @@ class Player : public Entity {
 	// Helmet		helmet;
 	// Chestplate	chestplate;
 	// Leggings		leggings;
-	// Boots		boots;
+	Boots		boots;
 	Potion		potion;
 	// Ring			ringLeft;
 	// Ring			ringRight;
 	//
+	bool moveTechActive;
+
+	std::vector<int> activeEffects;
+	std::vector<int> effectPotencies;
+
 public:
 	Player();
 
@@ -46,7 +51,15 @@ public:
 
 	std::string echo() { return "Player"; }
 
-	void hurt(int damage) { hitPts -= damage; if (hitPts <= 0) { hitPts = maxHP; std::cout << "Quaffed potion!\n";} }
+	void hurt(int damage) { hitPts -=	(damage - (effectPotencies[GLYPH_PDEF]+effectPotencies[GLYPH_DEF]) > 0 ? 
+										 damage - (effectPotencies[GLYPH_PDEF]+effectPotencies[GLYPH_DEF]) : 0);
+							
+							if (hitPts <= 0 && potion.isEquipped()) { 
+								hitPts = ((potion.echo_potency() < maxHP) ? potion.echo_potency() : maxHP); 
+								std::cout << "Quaffed potion!\n"; 
+								potion.set_equipped(false);
+							} 
+	}
 	bool isAlive() { return hitPts > 0; }
 	int getHP() { return hitPts; }
 	int getMaxHP() { return maxHP; }
@@ -54,6 +67,8 @@ public:
 	int getMoney() { return gold; }
 	bool hasItem(int i){
 		switch (i) {
+		case 6:
+			return boots.isEquipped();
 		case 7:
 			return potion.isEquipped();
 		default:
@@ -62,6 +77,8 @@ public:
 	}
 	Item* getItem(int i) {
 		switch (i) {
+		case 6:
+			return &boots;
 		case 7:
 			return &potion;
 		default:
@@ -69,6 +86,16 @@ public:
 		}
 	}
 	
+	void recalc_effects() {
+		for (int i = 0; i < effectPotencies.size(); i++) {
+			effectPotencies[i] = 0;
+		}
+		if (boots.isEquipped()) {
+			//std::cout << "Effect modified: " << boots.echo_effect() << " of vector with size " << effectPotencies.size() << "\n";
+			effectPotencies[boots.echo_effect()] += boots.echo_potency();
+		}
+	}
+
 	void replaceItem(Item*& destItem, Item& templateItem) {
 		destItem->set_cost(templateItem.echo_cost());
 		destItem->set_effect(templateItem.echo_effect());
@@ -80,9 +107,16 @@ public:
 	void move(int direction, LevelMap& wallMap, enemyList& list, InventoryList& invList, Portal* endPortal);
 };
 
-inline Player::Player() : Entity() { hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; }
+inline Player::Player() : Entity() { 
+	hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; 
+	effectPotencies.resize(EFFECT_COUNT); recalc_effects(); moveTechActive = false;
+}
 
-inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia();  hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; }
+inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { 
+	loadPlayerMedia();  
+	hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0;
+	effectPotencies.resize(EFFECT_COUNT); recalc_effects(); moveTechActive = false;
+}
 
 inline Player::~Player()
 {
@@ -122,6 +156,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Inve
 	if (list.isAt(nextX, nextY)) {
 		list.attackSelected(collMoney);
 		actionTaken = true;
+		std::cout << "Dealt " << damageDealt << " damage!\n";
 	}
 	
 	Inventory tempInv; Item* tempItem = nullptr; int currItem = 0;
@@ -134,6 +169,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Inve
 		if (tempInv.empty()) { actionTaken = true; }
 		//If no items were taken, pass, otherwise...
 		else {
+			//tempInv.callAllItems();
 			for (int i = 0; i < tempInv.size(); i++) {
 				//For every item, check if it can be equipped.
 				//If it can copy its stats and set a new item in the slot.
@@ -142,6 +178,21 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Inve
 				currItem = tempItem->echo_type();
 
 				switch (currItem) {
+				case TYPE_BOOT:
+					if (boots.isEquipped()) {
+						sourceInv->addItem(new Boots(0, boots.echo_effect(), boots.echo_potency(), false));
+						boots = Boots(0, tempItem->echo_effect(), tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					else {
+						//Set potion params
+						boots = Boots(0,tempItem->echo_effect(), tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					recalc_effects();
+					break;
 				case TYPE_POTN:
 					if (potion.isEquipped()) {
 						sourceInv->addItem(new Potion(0, potion.echo_potency(), false));
@@ -168,6 +219,7 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Inve
 		if (nextX >= 0 && nextY >= 0 && nextX < wallMap.getXSize() && nextY < wallMap.getYSize()) 
 		{
 			if (wallMap.echoObj(nextX, nextY) == "Floor") { setX(nextX); setY(nextY); }
+			else if (wallMap.echoObj(nextX, nextY) == "Wall" && effectPotencies[GLYPH_PHASE] > 0) { setX(nextX); setY(nextY); }
 			else if (wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setX(nextX); setY(nextY); }
 			else if (wallMap.echoObj(nextX, nextY) == "Portal") {
 				setX(nextX); setY(nextY); bool finished = true;
@@ -197,7 +249,6 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Inve
 
 
 	hurt(accDamage); addMoney(collMoney);
-	if (actionTaken) { std::cout << "Dealt " << damageDealt << " damage!\n"; }
 	//std::cout << "Next tile: " << wallMap.echoObj(nextX, nextY) << "\n";
 }
 
