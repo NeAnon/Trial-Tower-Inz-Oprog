@@ -39,7 +39,7 @@ bool init();
 bool loadMedia();
 
 //Loads the sample level from path
-void loadLevel(std::string levelPath, Player& player, LevelMap& lvlMap, enemyList& eList, Portal*& portal);
+void loadLevel(std::string levelPath, Player& player, LevelMap& lvlMap, enemyList& eList, InventoryList &invList, Portal*& portal);
 
 //Frees media and shuts down SDL
 void close();
@@ -108,14 +108,14 @@ bool loadMedia()
     return success;
 }
 
-void loadLevel(std::string levelPath, Player &player, LevelMap &lvlMap, enemyList &eList, Portal*& portal) {
-	parseLevel(levelPath, player, lvlMap, eList, gRenderer);
+void loadLevel(std::string levelPath, Player &player, LevelMap &lvlMap, enemyList &eList, InventoryList &invlist, Portal*& portal) {
+	parseLevel(levelPath, player, lvlMap, eList, invlist, gRenderer);
 
 	//Set level size to level dims
 	WTexture::setGlobalLSize(lvlMap.getXSize() * 32, lvlMap.getYSize() * 32);
 	WTexture::calculate_renderRect();
 
-	//reload media for selected enemies
+	//reload media for selected enemiesS
 	eList.reloadMedia();
 
 	portal = lvlMap.getPortalPtr();
@@ -152,9 +152,10 @@ int main(int argc, char* args[])
 		{
 			//Main loop flag
 			bool quit = false;
-
+			
 			//Event handler
 			SDL_Event e;
+			bool paused = false;
 
 			bool inLevel = false;
 			std::vector<std::string> lvlList;
@@ -171,6 +172,7 @@ int main(int argc, char* args[])
 			WTexture::setGlobalWSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 			 
 			WTexture::calculate_renderRect();
+			preloadItems(gRenderer);
 
 			Title titleScreen(gRenderer);
 
@@ -181,13 +183,14 @@ int main(int argc, char* args[])
 			eList.setRenderer(gRenderer);
 			LevelMap lvlMap;
 			Portal* portal = new Portal(0, 0, gRenderer);
+			InventoryList allItems;
 			
 			Interface HUD(gRenderer);
 			HUD.loadInterface();
 
 			if (inLevel) {
 				delete portal;
-				loadLevel(lvlList[lvCounter], player, lvlMap, eList, portal);
+				loadLevel(lvlList[lvCounter], player, lvlMap, eList, allItems, portal);
 			}
 
 			Uint8 testvar = 0;
@@ -249,57 +252,77 @@ int main(int argc, char* args[])
 						}
 					}
 					//User presses a key
+					//Checking if the user is in the game
 					if (inLevel) {
-						if (e.type == SDL_KEYDOWN)
-						{
-							int pDamageAcc = 0;
-							//Move player based on key press
-							switch (e.key.keysym.sym)
+						//Checking if the user has paused the game
+						if (paused) {
+							//If so, handle inventory (?)
+							if (e.type == SDL_KEYDOWN)
 							{
-							case SDLK_UP:
-								lvlMap.updateTiles();
-								player.move(DIRECTION_UP, lvlMap, eList, portal);
-								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
-								player.hurt(pDamageAcc);
-								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-								break;
-
-							case SDLK_DOWN:
-								lvlMap.updateTiles();
-								player.move(DIRECTION_DOWN, lvlMap, eList, portal);
-								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
-								player.hurt(pDamageAcc);
-								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-								break;
-
-							case SDLK_LEFT:
-								lvlMap.updateTiles();
-								player.move(DIRECTION_LEFT, lvlMap, eList, portal);
-								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
-								player.hurt(pDamageAcc);
-								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-								break;
-
-							case SDLK_RIGHT:
-								lvlMap.updateTiles();
-								player.move(DIRECTION_RIGHT, lvlMap, eList, portal);
-								eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
-								lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
-								player.hurt(pDamageAcc);
-								if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
-								break;
-
-							case SDLK_b:
-								player.changeBoots();
-								break;
-
-							default:
-								break;
+								switch (e.key.keysym.sym)
+								{
+								case SDLK_ESCAPE:
+									paused = false;
+									break;
+								default:
+									break;
+								}
 							}
-							//player.addMoney(-player.getMoney());	player.addMoney(mt() % 1000000);
+						}
+						else
+						{
+							//Otherwise, continue gameplay
+							if (e.type == SDL_KEYDOWN)
+							{
+								//Accumulated damage (player)
+								int pDamageAcc = 0;
+								//Move player based on key press
+								switch (e.key.keysym.sym)
+								{
+								case SDLK_UP:
+									lvlMap.updateTiles();
+									player.move(DIRECTION_UP, lvlMap, eList, allItems, portal);
+									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
+									player.hurt(pDamageAcc);
+									if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+									break;
+
+								case SDLK_DOWN:
+									lvlMap.updateTiles();
+									player.move(DIRECTION_DOWN, lvlMap, eList, allItems, portal);
+									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
+									player.hurt(pDamageAcc);
+									if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+									break;
+
+								case SDLK_LEFT:
+									lvlMap.updateTiles();
+									player.move(DIRECTION_LEFT, lvlMap, eList, allItems, portal);
+									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
+									player.hurt(pDamageAcc);
+									if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+									break;
+								case SDLK_RIGHT:
+									lvlMap.updateTiles();
+									player.move(DIRECTION_RIGHT, lvlMap, eList, allItems, portal);
+									eList.moveAll(lvlMap, pDamageAcc, player.getX(), player.getY());
+									lvlMap.activateTrap(player.getX(), player.getY(), pDamageAcc);
+									player.hurt(pDamageAcc);
+									if (pDamageAcc > 0) { std::cout << "Player hit, hp remaining: " << player.getHP() << '\n'; }
+									break;
+								case SDLK_ESCAPE:
+									paused = true;
+									break;
+								default:
+									break;
+								}
+								ShowItemRenders = false;
+								//player.addMoney(-player.getMoney());	player.addMoney(mt() % 1000000);
+
+							}
 						}
 					}
 					else {
@@ -326,7 +349,7 @@ int main(int argc, char* args[])
 						switch (action) {
 						case OPT_START:
 							delete portal;
-							loadLevel(lvlList[lvCounter], player, lvlMap, eList, portal);
+							loadLevel(lvlList[lvCounter], player, lvlMap, eList, allItems, portal);
 							inLevel = true;
 							break;
 						case OPT_QUIT:
@@ -343,7 +366,7 @@ int main(int argc, char* args[])
 					if (inLevel && portal->isFinished()) {
 						lvCounter++; 
 						if (lvCounter < lvlList.size()) {
-							loadLevel(lvlList[lvCounter], player, lvlMap, eList, portal);
+							loadLevel(lvlList[lvCounter], player, lvlMap, eList, allItems, portal);
 						}
 						else {
 							std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
@@ -356,6 +379,8 @@ int main(int argc, char* args[])
 
 					//Render all remaining enemies
 					eList.renderAll();
+					allItems.render();
+
 
 					if (player.getX() == portal->getX() && player.getY() == portal->getY() && quit == false) {
 						portal->renderText(portal->getX(), portal->getY(), GAME_WIDTH, GAME_HEIGHT);
@@ -370,7 +395,8 @@ int main(int argc, char* args[])
 						std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
 					}
 					
-					HUD.render(player);
+					if (ShowItemRenders) { ShowItemRenders = false; }
+					HUD.render(player, paused);
 
 					//Outline everything that's rendered
 					WTexture::outlineAll(gRenderer);
@@ -388,6 +414,9 @@ int main(int argc, char* args[])
 				testvar--;
 				testrect.w = std::ceil((testvar * 1.0 / 255) * 64);
 				*/
+
+				if (paused) {
+				}
 
 				//Update screen (must be after rendering everything prior!!!)
                 SDL_RenderPresent(gRenderer);

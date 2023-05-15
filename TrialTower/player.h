@@ -11,6 +11,8 @@
 #include "entity.h"
 #include "enemy.h"
 
+#include "item.h"
+
 //Entities will have to take into account map layout
 #include "levelMap.h"
 
@@ -20,8 +22,20 @@ class Player : public Entity {
 	int maxHP;
 	int damageDealt;
 	int gold;
-	int hasPotion;
-	bool hasBoots = false;
+	Weapon		weapon;
+	// Shield		shield;
+	// Helmet		helmet;
+	// Chestplate	chestplate;
+	// Leggings		leggings;
+	Boots		boots;
+	Potion		potion;
+	// Ring			ringLeft;
+	// Ring			ringRight;
+	//
+	bool moveTechActive;
+
+	std::vector<int> activeEffects;
+	std::vector<int> effectPotencies;
 public:
 	Player();
 
@@ -36,34 +50,87 @@ public:
 
 	std::string echo() { return "Player"; }
 
-	void hurt(int damage) { hitPts -= damage; if (hitPts <= 0 && hasPotion) { hitPts = maxHP; hasPotion = false; std::cout << "Quaffed potion!\n";} }
+	void hurt(int damage) { hitPts -=	(damage - (effectPotencies[GLYPH_PDEF]+effectPotencies[GLYPH_DEF]) > 0 ? 
+										 damage - (effectPotencies[GLYPH_PDEF]+effectPotencies[GLYPH_DEF]) : 0);
+							
+							if (hitPts <= 0 && potion.isEquipped()) { 
+								hitPts = ((potion.echo_potency() < maxHP) ? potion.echo_potency() : maxHP); 
+								std::cout << "Quaffed potion!\n"; 
+								potion.set_equipped(false);
+							} 
+	}
 	bool isAlive() { return hitPts > 0; }
 	int getHP() { return hitPts; }
 	int getMaxHP() { return maxHP; }
 	void addMoney(int money) { gold += money; }
 	int getMoney() { return gold; }
-	bool hasPot() { return hasPotion; }
-	void changeBoots() {
-		hasBoots = !hasBoots;
+	bool hasItem(int i){
+		switch (i) {
+		case 1:
+			return weapon.isEquipped();
+		case 6:
+			return boots.isEquipped();
+		case 7:
+			return potion.isEquipped();
+		default:
+			return false;
+		}
 	}
-	bool hasBoot() {
-		return hasBoots;
+	Item* getItem(int i) {
+		switch (i) {
+		case 1:
+			return &weapon;
+		case 6:
+			return &boots;
+		case 7:
+			return &potion;
+		default:
+			return nullptr;
+		}
 	}
 	
-	
+	void recalc_effects() {
+		for (int i = 0; i < effectPotencies.size(); i++) {
+			effectPotencies[i] = 0;
+		}
+		if (weapon.isEquipped()) {
+			effectPotencies[weapon.echo_effect()] += weapon.echo_potency();
+		}
+		if (boots.isEquipped()) {
+			//std::cout << "Effect modified: " << boots.echo_effect() << " of vector with size " << effectPotencies.size() << "\n";
+			effectPotencies[boots.echo_effect()] += boots.echo_potency();
+		}
+
+		damageDealt = 10 + effectPotencies[GLYPH_DMG] + effectPotencies[GLYPH_PDMG];
+	}
+
+	void replaceItem(Item*& destItem, Item& templateItem) {
+		destItem->set_cost(templateItem.echo_cost());
+		destItem->set_effect(templateItem.echo_effect());
+		destItem->set_equipped(templateItem.isEquipped());
+		destItem->set_potency(templateItem.echo_potency());
+	}
+
 	//Movement handler
-	void move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal);
+	void move(int direction, LevelMap& wallMap, enemyList& list, InventoryList& invList, Portal* endPortal);
 };
 
-inline Player::Player() :Entity() { hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; }
+inline Player::Player() : Entity() { 
+	hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; 
+	effectPotencies.resize(EFFECT_COUNT); recalc_effects(); moveTechActive = false;
+}
 
-inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { loadPlayerMedia();  hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0; }
+inline Player::Player(int x, int y, SDL_Renderer* renderPtr = nullptr) : Entity(x, y, renderPtr) { 
+	loadPlayerMedia();  
+	hitPts = 100; maxHP = 100; damageDealt = 10; gold = 0;
+	effectPotencies.resize(EFFECT_COUNT); recalc_effects(); moveTechActive = false;
+}
 
 inline Player::~Player()
 {
 }
 
-inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Portal* endPortal)
+inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, InventoryList& invlist, Portal* endPortal)
 {
 	bool hasBoots = hasBoot();
 
@@ -82,93 +149,122 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 	//Depending on direction chosen, if within boundaries and not about to run into a wall, move the entity
 	switch (direction) {
 	case DIRECTION_UP:
-		nextY-=moveOffset;
-		//Check for enemies
-		if (list.isAt(nextX, nextY)) {
-			list.attackSelected(collMoney);
-			actionTaken = true;
-		}
-		if (!actionTaken) {
-			if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "Floor") { setY(nextY); }
-			else if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setY(nextY); }
-			else if (nextY >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
-				setY(nextY); bool finished = true;
-				if (list.enemiesLeft() > 0) {
-					finished = false;
-				}
-				if (finished) {
-					endPortal->setFinishState(finished);
-				}
-			}
-		}
+		nextY--;
 		break;
 	case DIRECTION_RIGHT:
-		nextX+=moveOffset;
-		//Check for enemies
-		if (list.isAt(nextX, nextY)) {
-			list.attackSelected(collMoney);
-			actionTaken = true;
-		}
-		if (!actionTaken) {
-			if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "Floor") { setX(nextX); }
-			else if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setX(nextX); }
-			else if (nextX < wallMap.getXSize() && wallMap.echoObj(nextX, nextY) == "Portal") {
-				setX(nextX); bool finished = true;
-				if (list.enemiesLeft() > 0) {
-					finished = false;
-				}
-				if (finished) {
-					endPortal->setFinishState(finished);
-				}
-			}
-		}
+		nextX++;
 		break;
 	case DIRECTION_DOWN:
-		nextY+=moveOffset;
-		//Check for enemies
-		//Check for enemies
-		if (list.isAt(nextX, nextY)) {
-			list.attackSelected(collMoney);
-			actionTaken = true;
-		}
-		if (!actionTaken) {
-			if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "Floor") { setY(nextY); }
-			else if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setY(nextY); }
-			else if (nextY < wallMap.getYSize() && wallMap.echoObj(nextX, nextY) == "Portal") {
-				setY(nextY); bool finished = true;
-				if (list.enemiesLeft() > 0) {
-					finished = false;
-				}
-				if (finished) {
-					endPortal->setFinishState(finished);
-				}
-			}
-		}
+		nextY++;
 		break;
 	case DIRECTION_LEFT:
-		nextX-=moveOffset;
-		//Check for enemies
-		if (list.isAt(nextX, nextY)) {
-			list.attackSelected(collMoney);
-			actionTaken = true;
-		}
-		if (!actionTaken) {
-			if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "Floor") { setX(nextX); }
-			else if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setX(nextX); }
-			else if (nextX >= 0 && wallMap.echoObj(nextX, nextY) == "Portal") {
-				setX(nextX); bool finished = true;
-				if (list.enemiesLeft() > 0) {
-					finished = false;
-				}
-				if (finished) {
-					endPortal->setFinishState(finished);
-				}
-			}
-		}
+		nextX--;
 		break;
 	default:
 		break;
 	}
+
+	//Check for enemies
+	if (list.isAt(nextX, nextY)) {
+		list.attackSelected(collMoney);
+		actionTaken = true;
+		std::cout << "Dealt " << damageDealt << " damage!\n";
+	}
+	
+	Inventory tempInv; Item* tempItem = nullptr; int currItem = 0;
+	Inventory* sourceInv = invlist.isInvAt(nextX, nextY);
+	
+	if (sourceInv) {
+		//Take all items you can from the inventory
+		sourceInv->giveItems(tempInv, gold);
+
+		if (tempInv.empty()) { actionTaken = true; }
+		//If no items were taken, pass, otherwise...
+		else {
+			//tempInv.callAllItems();
+			for (int i = 0; i < tempInv.size(); i++) {
+				//For every item, check if it can be equipped.
+				//If it can copy its stats and set a new item in the slot.
+				//If the slot is occupied, save the stats and put the item back into the ptr we are pulling from.
+				tempItem = tempInv.itemAt(i);
+				currItem = tempItem->echo_type();
+
+				switch (currItem) {
+				case TYPE_WEAP:
+					if (weapon.isEquipped()) {
+						sourceInv->addItem(new Weapon(0, weapon.echo_effect(), weapon.echo_potency(), false));
+						weapon = Weapon(0, tempItem->echo_effect(), tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					else {
+						//Set potion params
+						weapon = Weapon(0,tempItem->echo_effect(), tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					recalc_effects();
+					break;
+				case TYPE_BOOT:
+					if (boots.isEquipped()) {
+						sourceInv->addItem(new Boots(0, boots.echo_effect(), boots.echo_potency(), false));
+						boots = Boots(0, tempItem->echo_effect(), tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					else {
+						//Set potion params
+						boots = Boots(0,tempItem->echo_effect(), tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					recalc_effects();
+					break;
+				case TYPE_POTN:
+					if (potion.isEquipped()) {
+						sourceInv->addItem(new Potion(0, potion.echo_potency(), false));
+						potion = Potion(0, tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					else {
+						//Set potion params
+						potion = Potion(0, tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					break;
+				default:
+					break;
+				}
+			}
+			if (sourceInv->empty()) { invlist.removeAt(nextX, nextY); }
+
+		}
+	}
+	//Check if player can move
+	if (!actionTaken) {
+		if (nextX >= 0 && nextY >= 0 && nextX < wallMap.getXSize() && nextY < wallMap.getYSize()) 
+		{
+			if (wallMap.echoObj(nextX, nextY) == "Floor") { setX(nextX); setY(nextY); }
+			else if (wallMap.echoObj(nextX, nextY) == "Wall" && effectPotencies[GLYPH_PHASE] > 0) { setX(nextX); setY(nextY); }
+			else if (wallMap.echoObj(nextX, nextY) == "SpikeTrap") { setX(nextX); setY(nextY); }
+			else if (wallMap.echoObj(nextX, nextY) == "Portal") {
+				setX(nextX); setY(nextY); bool finished = true;
+				if (list.enemiesLeft() > 0) {
+					finished = false;
+				}
+				if (finished) {
+					endPortal->setFinishState(finished);
+				}
+			}
+		}
+	}
+	if (collMoney < 0) { collMoney = 0; } 
+
+
+
+#if 0
 	if (collMoney == -50) {
 		if (hasPotion) { collMoney += 50; }
 		else {
@@ -176,8 +272,11 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Port
 			else { collMoney = 0; }
 		}
 	}
+#endif // 0
+
+
+
 	hurt(accDamage); addMoney(collMoney);
-	if (actionTaken) { std::cout << "Dealt " << damageDealt << " damage!\n"; }
 	//std::cout << "Next tile: " << wallMap.echoObj(nextX, nextY) << "\n";
 }
 
@@ -187,6 +286,8 @@ class Interface {
 	WTexture healthTextureShadow;
 	WTexture coinTexture;
 	WTexture digitTexture;
+	WTexture playerInventory;
+	WTexture pauseOverlay;
 	SDL_Rect healthBarState;
 	SDL_Rect healthBarMissing;
 	SDL_Rect coinState;
@@ -198,7 +299,7 @@ public:
 	Interface(SDL_Renderer * renderPtr);
 
 	void loadInterface() {
-		//Load entity texture	
+		//Load entity texture
 		if (!healthTexture.loadFromFile("resources/healthbar.png"))
 		{
 			printf("Failed to load health bar texture! SDL_image Error: %s\n", IMG_GetError());
@@ -215,15 +316,25 @@ public:
 		{
 			printf("Failed to load number texture! SDL_image Error: %s\n", IMG_GetError());
 		}
+		if (!playerInventory.loadFromFile("resources/Player_Inventory.png"))
+		{
+			printf("Failed to load inventory texture! SDL_image Error: %s\n", IMG_GetError());
+		}
+		if (!pauseOverlay.loadFromFile("resources/pauseOverlay.png"))
+		{
+			printf("Failed to load pause texture! SDL_image Error: %s\n", IMG_GetError());
+		}
 	}
 
-	inline void render(Player &player)
+	inline void render(Player& player, bool paused)
 	{
+		//interfaceBG.render(0, WTexture::getGlobalLHeight());
 		healthBarState.w = 32 + player.getHP() * 96 / player.getMaxHP();
 		int money = player.getMoney();
 		//Render the entity at given grid coords (may need to change the numbers to adjust for level grid)
 		healthTextureShadow.render(0, WTexture::getGlobalLHeight(), &healthBarMissing);
 		healthTexture.render(0, WTexture::getGlobalLHeight(), &healthBarState);
+		playerInventory.render(160, WTexture::getGlobalLHeight());
 		coinTexture.render(WTexture::getGlobalLWidth() - 32, WTexture::getGlobalLHeight());
 		int coinOffset = 0;
 		if (money == 0) {
@@ -236,8 +347,28 @@ public:
 			}
 		}
 
-		if (player.hasPot()) { healthBarMissing.w = 160; }
-		else { healthBarMissing.w = 128; }
+		if (paused) {
+			if(paused) {
+				pauseOverlay.render(0, 0);
+			}
+			int HP = player.getHP();
+			if (HP == 0) {
+				digitTexture.render(64, WTexture::getGlobalLHeight(), &digits[0]);
+			}
+			else {
+				int HPOffset = 80 + std::trunc(std::log10(std::abs(HP))-1)*8;
+				while (HP > 0) { 
+					digitTexture.render(HPOffset, WTexture::getGlobalLHeight(), &digits[HP % 10]);
+					HP /= 10; HPOffset -= 16;
+				}
+			}
+		}
+
+		for (int i = 1; i <= 9; i++) {
+			if (player.hasItem(i)) {
+				player.getItem(i)->render(i);
+			}
+		}
 	}
 };
 
@@ -272,4 +403,6 @@ inline Interface::Interface(SDL_Renderer* renderPtr)
 	healthTextureShadow.setRenderer(renderPtr);
 	coinTexture.setRenderer(renderPtr);
 	digitTexture.setRenderer(renderPtr);
+	playerInventory.setRenderer(renderPtr);
+	pauseOverlay.setRenderer(renderPtr);
 }

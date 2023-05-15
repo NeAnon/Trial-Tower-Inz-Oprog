@@ -315,7 +315,7 @@ inline bool enemyList::isAt(int x, int y) {
 inline void enemyList::attackSelected(int &money) {
 	if (enemySelected == -1) { return; }
 	if (list[enemySelected] != nullptr) {
-		if (list[enemySelected]->echo() == "PotionSeller") { money -= 50; return; }
+		if (list[enemySelected]->echo() == "PotionSeller") { money -= 0; return; }
 		else {
 			money += list[enemySelected]->getBounty();
 			delete list[enemySelected];

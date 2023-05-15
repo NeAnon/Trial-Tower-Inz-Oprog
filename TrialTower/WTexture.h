@@ -70,7 +70,7 @@ public:
 		//std::cout << "Upscale value: " << upscale << "\n";
 
 		//Use upscale value to find centering offset
-		w_offset = (WINDOW_WIDTH - (GAME_WIDTH * upscale))/2; h_offset = (WINDOW_HEIGHT - (GAME_HEIGHT * upscale))/2;
+		w_offset = (WINDOW_WIDTH - (GAME_WIDTH * upscale)) / 2; h_offset = (WINDOW_HEIGHT - (GAME_HEIGHT * upscale)) / 2;
 		//std::cout << "Width offset: " << w_offset << "\nHeight offset: " << h_offset << std::endl;
 	}
 
@@ -92,6 +92,8 @@ public:
 		SDL_Rect levelOutline{ w_offset, h_offset, std::round(LEVEL_WIDTH * upscale), std::round(LEVEL_HEIGHT * upscale) };
 
 		SDL_RenderDrawRect(renderPtr, &levelOutline);
+
+		SDL_SetRenderDrawColor(renderPtr, 0x00, 0x00, 0x00, 0xFF);
 	}
 
 };
