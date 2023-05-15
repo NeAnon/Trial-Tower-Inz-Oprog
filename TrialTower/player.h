@@ -22,7 +22,7 @@ class Player : public Entity {
 	int maxHP;
 	int damageDealt;
 	int gold;
-	// Weapon		weapon;
+	Weapon		weapon;
 	// Shield		shield;
 	// Helmet		helmet;
 	// Chestplate	chestplate;
@@ -67,6 +67,8 @@ public:
 	int getMoney() { return gold; }
 	bool hasItem(int i){
 		switch (i) {
+		case 1:
+			return weapon.isEquipped();
 		case 6:
 			return boots.isEquipped();
 		case 7:
@@ -77,6 +79,8 @@ public:
 	}
 	Item* getItem(int i) {
 		switch (i) {
+		case 1:
+			return &weapon;
 		case 6:
 			return &boots;
 		case 7:
@@ -90,10 +94,15 @@ public:
 		for (int i = 0; i < effectPotencies.size(); i++) {
 			effectPotencies[i] = 0;
 		}
+		if (weapon.isEquipped()) {
+			effectPotencies[weapon.echo_effect()] += weapon.echo_potency();
+		}
 		if (boots.isEquipped()) {
 			//std::cout << "Effect modified: " << boots.echo_effect() << " of vector with size " << effectPotencies.size() << "\n";
 			effectPotencies[boots.echo_effect()] += boots.echo_potency();
 		}
+
+		damageDealt = 10 + effectPotencies[GLYPH_DMG] + effectPotencies[GLYPH_PDMG];
 	}
 
 	void replaceItem(Item*& destItem, Item& templateItem) {
@@ -178,6 +187,21 @@ inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, Inve
 				currItem = tempItem->echo_type();
 
 				switch (currItem) {
+				case TYPE_WEAP:
+					if (weapon.isEquipped()) {
+						sourceInv->addItem(new Weapon(0, weapon.echo_effect(), weapon.echo_potency(), false));
+						weapon = Weapon(0, tempItem->echo_effect(), tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					else {
+						//Set potion params
+						weapon = Weapon(0,tempItem->echo_effect(), tempItem->echo_potency(), true);
+						tempItem = nullptr;
+						tempInv.removeItem(i);
+					}
+					recalc_effects();
+					break;
 				case TYPE_BOOT:
 					if (boots.isEquipped()) {
 						sourceInv->addItem(new Boots(0, boots.echo_effect(), boots.echo_potency(), false));

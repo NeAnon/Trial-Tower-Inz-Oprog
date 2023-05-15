@@ -127,6 +127,17 @@ public:
 	}
 };
 
+class Weapon : public Item {
+private:
+	bool active;
+public:
+	Weapon(int c = 0, int ef = 0, int p = 0, bool e = false, int t = TYPE_WEAP) : Item(e, t, c, p) { set_effect(ef); set_sprite(1); active = true; }
+
+	//int getHealStrength() { return heal; }
+	//int getIntMetadata() { return getHealStrength(); }
+
+};
+
 class Boots : public Item {
 private:
 	bool active;

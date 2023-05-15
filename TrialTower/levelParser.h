@@ -113,6 +113,9 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 					itemY = buf;
 					Item* newItem = nullptr;
 					switch(std::stoi(type)){
+					case TYPE_WEAP:
+						newItem = new Weapon(std::stoi(cost), std::stoi(effect), std::stoi(potency), false);
+						break;
 					case TYPE_BOOT:
 						newItem = new Boots(std::stoi(cost), std::stoi(effect), std::stoi(potency), false);
 						break;
