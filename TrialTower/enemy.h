@@ -229,6 +229,11 @@ public:
 	inline potionSeller(int x, int y, SDL_Renderer* renderPtr = nullptr) : Enemy(x, y, renderPtr) {}
 	inline ~potionSeller() {}
 
+	void loadEnemyMedia() {
+		//Load media specifically used by the enemies
+		loadMedia("dummy.png");
+	}
+
 	int next_move(LevelMap& wallMap, int playerX, int playerY) { return 0; }
 	void move(int direction, int& dmgCounter, int playerX, int playerY) {}
 

@@ -107,6 +107,7 @@ public:
 		{
 			items.render(posX * 32, posY * 32, &itemSprite);
 			if (cost) {
+				workingTextSprite.x = 0;
 				itemGlyphs.render(posX * 32, (posY * 32) + 24, &workingTextSprite);
 				std::string displaycost = std::to_string(cost);
 				for (int i = 0; i < displaycost.size(); i++) {

@@ -41,10 +41,13 @@
     <Image Include="resources\dragon_left.png" />
     <Image Include="resources\dragon_right.png" />
     <Image Include="resources\enemySliderSheet.png" />
+    <Image Include="resources\enemySliderSheet2.png" />
     <Image Include="resources\enemySpriteSheetTransparent-1.png" />
     <Image Include="resources\enemySpriteSheetTransparent-2.png" />
     <Image Include="resources\enemySpriteSheetTransparent.png" />
+    <Image Include="resources\enemySpriteSheetTransparent2.png" />
     <Image Include="resources\enemyWanderSheet.png" />
+    <Image Include="resources\enemyWanderSheet2.png" />
     <Image Include="resources\floor_wood.png" />
     <Image Include="resources\healthbar.png" />
     <Image Include="resources\healthbarMissing.png" />
@@ -61,6 +64,7 @@
     <Image Include="resources\pauseOverlay.png" />
     <Image Include="resources\playerSpriteSheet.png" />
     <Image Include="resources\playerSpriteSheet2.png" />
+    <Image Include="resources\playerSpriteSheetTransparen2.png" />
     <Image Include="resources\playerSpriteSheetTransparent.png" />
     <Image Include="resources\Player_Inventory.png" />
     <Image Include="resources\portal.png" />

@@ -132,10 +132,6 @@ inline Player::~Player()
 
 inline void Player::move(int direction, LevelMap& wallMap, enemyList& list, InventoryList& invlist, Portal* endPortal)
 {
-	bool hasBoots = hasBoot();
-
-	int moveOffset = hasBoots ? 2 : 1;
-
 	//Set clip square to entity's current direction (use case if irregular sprite sizes)
 	setClip(direction, 0);
 
