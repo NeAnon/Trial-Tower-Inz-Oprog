@@ -39,7 +39,7 @@ bool init();
 bool loadMedia();
 
 //Loads the sample level from path
-void loadLevel(std::string levelPath, Player& player, LevelMap& lvlMap, enemyList& eList, InventoryList &invList, Portal*& portal);
+void loadLevel(std::string levelPath, Player& player, LevelMap& lvlMap, enemyList& eList, InventoryList& invList, Portal*& portal);
 
 //Frees media and shuts down SDL
 void close();
@@ -52,19 +52,19 @@ SDL_Renderer* gRenderer = NULL;
 
 bool init()
 {
-    //Initialization flag
-    bool success = true;
+	//Initialization flag
+	bool success = true;
 
-    //Initialize SDL
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
-    {
-        printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
-        success = false;
-    }
-    else
-    {
-        //Create window
-		gWindow = SDL_CreateWindow("TrialTower v0.0.0.0.5", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, GAME_WIDTH, GAME_HEIGHT, SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE);
+	//Initialize SDL
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	{
+		printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
+		success = false;
+	}
+	else
+	{
+		//Create window
+		gWindow = SDL_CreateWindow("TrialTower v0.0.0.0.5", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, GAME_WIDTH, GAME_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 		if (gWindow == NULL)
 		{
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -93,22 +93,22 @@ bool init()
 				}
 			}
 		}
-    }
+	}
 
-    return success;
+	return success;
 }
 
 bool loadMedia()
 {
-    //Loading success flag
-    bool success = true;
+	//Loading success flag
+	bool success = true;
 
 	//Here global sprites would be loaded, however we (most likely) want each class to handle its own sprite
 
-    return success;
+	return success;
 }
 
-void loadLevel(std::string levelPath, Player &player, LevelMap &lvlMap, enemyList &eList, InventoryList &invlist, Portal*& portal) {
+void loadLevel(std::string levelPath, Player& player, LevelMap& lvlMap, enemyList& eList, InventoryList& invlist, Portal*& portal) {
 	parseLevel(levelPath, player, lvlMap, eList, invlist, gRenderer);
 
 	//Set level size to level dims
@@ -123,15 +123,15 @@ void loadLevel(std::string levelPath, Player &player, LevelMap &lvlMap, enemyLis
 
 void close()
 {
-    //Destroy window	
-    SDL_DestroyRenderer(gRenderer);
-    SDL_DestroyWindow(gWindow);
-    gWindow = NULL;
-    gRenderer = NULL;
+	//Destroy window	
+	SDL_DestroyRenderer(gRenderer);
+	SDL_DestroyWindow(gWindow);
+	gWindow = NULL;
+	gRenderer = NULL;
 
-    //Quit SDL subsystems
-    IMG_Quit();
-    SDL_Quit();
+	//Quit SDL subsystems
+	IMG_Quit();
+	SDL_Quit();
 }
 
 int main(int argc, char* args[])
@@ -142,7 +142,7 @@ int main(int argc, char* args[])
 		printf("Failed to initialize!\n");
 	}
 	else
-	{	
+	{
 		//Load media (if any)
 		if (!loadMedia())
 		{
@@ -152,7 +152,7 @@ int main(int argc, char* args[])
 		{
 			//Main loop flag
 			bool quit = false;
-			
+
 			//Event handler
 			SDL_Event e;
 			bool paused = false;
@@ -168,9 +168,9 @@ int main(int argc, char* args[])
 
 			//Set level and window sizes for WTexture to use
 			WTexture::setGlobalLSize(WINDOW_WIDTH, WINDOW_WIDTH);
-			
+
 			WTexture::setGlobalWSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-			 
+
 			WTexture::calculate_renderRect();
 			preloadItems(gRenderer);
 
@@ -184,7 +184,7 @@ int main(int argc, char* args[])
 			LevelMap lvlMap;
 			Portal* portal = new Portal(0, 0, gRenderer);
 			InventoryList allItems;
-			
+
 			Interface HUD(gRenderer);
 			HUD.loadInterface();
 
@@ -223,22 +223,22 @@ int main(int argc, char* args[])
 			//std::wcout << "---------------path------------------" << std::endl;
 			//std::wcout << ExePath() << std::endl;
 			//std::wcout << "---------------path------------------" << std::endl;
-			
+
 			int mx_ = 0;
 			int my_ = 0;
-			
+
 
 			//While the application is running...
-            while (!quit)
-            {
-                //Handle events on queue if there are any
-                while (SDL_PollEvent(&e) != 0)
-                {
-                    //User presses the X button
-                    if (e.type == SDL_QUIT)
-                    {
-                        quit = true;
-                    }
+			while (!quit)
+			{
+				//Handle events on queue if there are any
+				while (SDL_PollEvent(&e) != 0)
+				{
+					//User presses the X button
+					if (e.type == SDL_QUIT)
+					{
+						quit = true;
+					}
 					//User tries to resize the window
 					else if (e.type == SDL_WINDOWEVENT) {
 						if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
@@ -364,7 +364,7 @@ int main(int argc, char* args[])
 
 				if (inLevel) {
 					if (inLevel && portal->isFinished()) {
-						lvCounter++; 
+						lvCounter++;
 						if (lvCounter < lvlList.size()) {
 							loadLevel(lvlList[lvCounter], player, lvlMap, eList, allItems, portal);
 						}
@@ -379,7 +379,7 @@ int main(int argc, char* args[])
 
 					//Render all remaining enemies
 					eList.renderAll();
-					allItems.render();
+					allItems.render(player.getX(), player.getY());
 
 
 					if (player.getX() == portal->getX() && player.getY() == portal->getY() && quit == false) {
@@ -394,7 +394,7 @@ int main(int argc, char* args[])
 						quit = true;
 						std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
 					}
-					
+
 					if (ShowItemRenders) { ShowItemRenders = false; }
 					HUD.render(player, paused);
 
@@ -407,7 +407,7 @@ int main(int argc, char* args[])
 
 				/*
 				* Code for a decreasing health bar that turns redder as health is drained:
-				* 
+				*
 				SDL_SetRenderDrawColor(gRenderer, 255 - testvar, testvar, 0, SDL_ALPHA_OPAQUE);
 				//SDL_RenderDrawRect(gRenderer, &testrect);
 				SDL_RenderFillRect(gRenderer, &testrect);
@@ -419,7 +419,7 @@ int main(int argc, char* args[])
 				}
 
 				//Update screen (must be after rendering everything prior!!!)
-                SDL_RenderPresent(gRenderer);
+				SDL_RenderPresent(gRenderer);
 			}
 		}
 	}

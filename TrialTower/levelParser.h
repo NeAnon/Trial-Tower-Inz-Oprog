@@ -48,7 +48,7 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 				}
 				else if (buf[1] == 'S') {
 					Trap* temp = nullptr;
-					if (buf[2] == 'A') { 
+					if (buf[2] == 'A') {
 						temp = new SpikeTrap(x, y, renderPtr, true);
 					}
 					else {
@@ -88,47 +88,50 @@ void parseLevel(std::string filepath, Player& player, LevelMap& lvlMap, enemyLis
 	std::cout << "Level loaded, loading items...\n";
 	buf = "";
 	//format: type, cost, x, y
-	std::string type = ""; std::string cost = ""; std::string effect = ""; std::string potency = ""; 
-	std::string itemX = "", itemY = "";
+	std::string type = ""; std::string cost = ""; std::string effect = ""; std::string potency = "";
+	std::string itemX = "", itemY = "", scroll = "";
 	while (!file.eof()) {
 		file >> buf;
 		if (buf != "")
 		{
-				if (type == "") {
-					type = buf;
+			if (type == "") {
+				type = buf;
+			}
+			else if (cost == "") {
+				cost = buf;
+			}
+			else if (effect == "") {
+				effect = buf;
+			}
+			else if (potency == "") {
+				potency = buf;
+			}
+			else if (itemX == "") {
+				itemX = buf;
+			}
+			else if (itemY == "") {
+				itemY = buf;
+			}
+			else {
+				scroll = buf;
+				Item* newItem = nullptr;
+				switch (std::stoi(type)) {
+				case TYPE_WEAP:
+					newItem = new Weapon(std::stoi(cost), std::stoi(effect), std::stoi(potency), false, TYPE_WEAP, scroll, renderPtr);
+					break;
+				case TYPE_BOOT:
+					newItem = new Boots(std::stoi(cost), std::stoi(effect), std::stoi(potency), false, TYPE_BOOT, scroll, renderPtr);
+					break;
+				case TYPE_POTN:
+					newItem = new Potion(std::stoi(cost), std::stoi(potency), false, TYPE_POTN, scroll, renderPtr);
+					break;
+				default:
+					newItem = new Item(false, std::stoi(type), std::stoi(cost));
 				}
-				else if (cost == "") {
-					cost = buf;
-				}
-				else if (effect == "") {
-					effect = buf;
-				}
-				else if (potency == "") {
-					potency = buf;
-				}
-				else if (itemX == "") {
-					itemX = buf;
-				}
-				else {
-					itemY = buf;
-					Item* newItem = nullptr;
-					switch(std::stoi(type)){
-					case TYPE_WEAP:
-						newItem = new Weapon(std::stoi(cost), std::stoi(effect), std::stoi(potency), false);
-						break;
-					case TYPE_BOOT:
-						newItem = new Boots(std::stoi(cost), std::stoi(effect), std::stoi(potency), false);
-						break;
-					case TYPE_POTN:
-						newItem = new Potion(std::stoi(cost), std::stoi(potency));
-						break;
-					default:
-						newItem = new Item(false, std::stoi(type), std::stoi(cost));
-					}
-					invlist.addItem(stoi(itemX), stoi(itemY), newItem);
-					type = ""; cost = ""; effect = ""; potency = ""; itemX = ""; itemY = "";
-					buf.clear();
-				}
+				invlist.addItem(stoi(itemX), stoi(itemY), newItem);
+				type = ""; cost = ""; effect = ""; potency = ""; itemX = ""; itemY = ""; scroll = "";
+				buf.clear();
+			}
 		}
 	}
 
