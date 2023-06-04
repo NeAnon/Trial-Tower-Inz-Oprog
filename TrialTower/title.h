@@ -15,6 +15,8 @@
 const int CHAR_W = 24;
 const int CHAR_H = 36;
 const int MARGIN = 8; const int TITLE_OFFSET = 52;
+const int NEW_NAME_X_OFFSET = 104;
+const int NEW_NAME_Y_OFFSET = 254;
 
 enum {
 	SELECT_CENTER,		//0
@@ -63,6 +65,15 @@ class Title {
 	std::vector<std::string> names;
 	std::vector<std::string> scores;
 	
+	//Game over screen
+	WTexture mGameOver;
+	SDL_Rect gameOverClip;
+	int GOX; int GOY;
+	int minScore; bool newScore;
+	
+	bool single_use_switch;
+
+
 	void initLeaderboard() {
 		names.resize(10);
 		scores.resize(10);
@@ -73,12 +84,17 @@ class Title {
 		while (!leaderboard_read.eof() && currScores < 10) {
 			leaderboard_read >> names[currScores];
 			leaderboard_read >> scores[currScores];
+
+			//std::cout << "At index: " << currScores << " Name: " << names[currScores] << ", Score: " << scores[currScores] << "\n";
+
+			if (!currScores && scores[currScores] != "") { minScore = std::stoi(scores[currScores]); }
+			else { if (scores[currScores] != "" && minScore > std::stoi(scores[currScores])) { minScore = std::stoi(scores[currScores]); } }
+			currScores++;
 		}
-
 		leaderboard_read.close();
+		//std::cout << "Min score: " << minScore << '\n';
 
-		if (names[9] == "") { names[9] = "AAAAAAAA"; }
-		if (scores[9] == "") { scores[9] = "999999"; }
+		if (scores[9] == "") {	minScore = 0; }
 
 		//std::cout << "Leaderboard closed.\n";
 		//for (int i = 0; i < 10; i++) {std::cout << names[i] << '\t' << scores[i] << '\n';}
@@ -92,26 +108,13 @@ class Title {
 		//Offset from the title + (amount of x-spaces) + (amount of other buttons)
 		return y + 64 + (x * (menuPos + 1)) + (z * menuPos);
 	}
-
-	void renderChar(int x, int y, char c) {
-		if (c >= 'A' && c <= 'Z') {
-			selCharClip.x = ((c - 'A')%6) * CHAR_W;
-			selCharClip.y = ((c - 'A') / 6) * CHAR_H;
-			mLeaderboardText.render(x, y, &selCharClip);
-		}
-		if (c >= '0' && c <= '9') {
-			selCharClip.x = ((c - '0' + 2) % 6) * CHAR_W;
-			selCharClip.y = ((c - '0' + 26) / 6) * CHAR_H;
-			mLeaderboardText.render(x, y, &selCharClip);
-		}
-	}
 		
 	void renderNameScore(std::string& name, std::string& score, int pos) {
 		//render name
 		for (int i = 0; i < name.size(); i++) {
 			renderChar(HSFrameX + MARGIN + (i * CHAR_W), HSFrameY + MARGIN + TITLE_OFFSET + (pos * (CHAR_H + 4)), name[i]);
 		}
-		int scoreOffset = 15 - score.size();
+		int scoreOffset = 16 - score.size();
 		//render score
 		for (int i = 0; i < score.size(); i++) {
 			renderChar(HSFrameX + MARGIN + ((scoreOffset + i) * CHAR_W), HSFrameY + MARGIN + TITLE_OFFSET + (pos * (CHAR_H + 4)), score[i]);
@@ -152,7 +155,6 @@ public:
 
 		HSX = WTexture::getGlobalLWidth() / 2 - mHiScoreButton.getWidth() / 2; 
 		HSY = calcButtonY(1);
-		
 		//startButtonClip.w = mStartButton.getWidth(); startButtonClip.h = mStartButton.getHeight();
 		if (!mQuitButton.loadFromFile("resources/quit_button.png"))
 		{
@@ -172,8 +174,19 @@ public:
 		HSFrameX = (WTexture::getGlobalLWidth() / 2) - (mLeaderboardFrame.getWidth() / 2);
 		HSFrameY = (WTexture::getGlobalLHeight() / 2) - (mLeaderboardFrame.getHeight() / 2);
 
+		if (!mGameOver.loadFromFile("resources/gameover.png"))
+		{
+			printf("Failed to load game end texture! SDL_image Error: %s\n", IMG_GetError());
+		}
+		
+		GOX = (WTexture::getGlobalLWidth() / 2) - (mGameOver.getWidth() / 2);
+		GOY = (WTexture::getGlobalLHeight() / 2) - (mGameOver.getHeight() / 2);
+		gameOverClip.w = mGameOver.getWidth();
+		gameOverClip.h = mGameOver.getHeight();
+
 		//quitButtonClip.w = mQuitButton.getWidth(); quitButtonClip.h = mQuitButton.getHeight();
 	}
+
 	void callButtonPos() {
 		std::cout << "Width offset: " << WTexture::getGlobalXOffset() << "\n";
 		std::cout << "Height offset: " << WTexture::getGlobalYOffset() << "\n";
@@ -302,6 +315,67 @@ public:
 			}
 		}
 	}
+
+	void renderChar(int x, int y, char c) {
+		if (c >= 'A' && c <= 'Z') {
+			selCharClip.x = ((c - 'A')%6) * CHAR_W;
+			selCharClip.y = ((c - 'A') / 6) * CHAR_H;
+			mLeaderboardText.render(x, y, &selCharClip);
+		}
+		if (c >= '0' && c <= '9') {
+			selCharClip.x = ((c - '0' + 2) % 6) * CHAR_W;
+			selCharClip.y = ((c - '0' + 26) / 6) * CHAR_H;
+			mLeaderboardText.render(x, y, &selCharClip);
+		}
+	}
+
+	void checkScore(int playerScore) {
+		if (playerScore > minScore) { newScore = true; }
+		else { gameOverClip.h = 80; }
+	}
+
+	void renderGameOver(std::string &name) {
+		if (single_use_switch) {
+			single_use_switch = false;
+			std::cout << "GOX: " << GOX << " \tGOY: " << GOY << "\t\n";
+		}
+		mGameOver.render(GOX, GOY-36, &gameOverClip);
+		if(newScore){
+			for (int i = 0; i < name.size(); i++) {
+				renderChar(GOX + NEW_NAME_X_OFFSET + (CHAR_W * i), GOX + NEW_NAME_Y_OFFSET, name[i]);
+			}
+		}
+	}
+
+	void saveScores(std::string playername, int newHighScore) {
+		checkScore(newHighScore);
+		if(newScore)
+		{
+			int index = 9;
+			names[9] = playername;
+			scores[9] = std::to_string(newHighScore);
+			
+			while (index > 0 && (scores[index-1] == "" || newHighScore > std::stoi(scores[index - 1]))) {
+				std::swap(names[index], names[index - 1]);
+				std::swap(scores[index], scores[index - 1]); 
+				index--;
+			}
+			std::cout << "Index " << index << " has name " << names[index] << " and score " << scores[index] << '\n';
+			std::cout << "starting write\n";
+			//Rewrite leaderboards from the ground up based on vector
+			std::ofstream newfile;
+			newfile.open("leaderboard.score", std::ios::out | std::ios::trunc );
+
+			for(int i = 0; i < names.size(); i++){
+				std::cout << "Writing score " << i + 1 << '\n';
+				newfile << names[i] << ' ' << scores[i] << '\n';
+			}
+
+			newfile.close();
+			std::cout << "file closed\n\n\n";
+		}
+	}
+
 };
 
 Title::Title() {
@@ -323,16 +397,21 @@ inline Title::Title(SDL_Renderer* renderPtr)
 	mQuitButton.setRenderer(renderPtr);
 	mLeaderboardText.setRenderer(renderPtr);
 	mLeaderboardFrame.setRenderer(renderPtr);
+	mGameOver.setRenderer(renderPtr);
 
 	startButtonClip = { 0, 0, 192, 96 };
 	hiScoreClip = { 0, 0, 192, 96 };
 	quitButtonClip = { 0, 0, 192, 96 };
 	selCharClip = { 0, 0, CHAR_W, CHAR_H };
+	gameOverClip = { 0,0,0,0 };
 
-	startX = 0; startY = 0; HSX = 0; HSY = 0; quitX = 0; quitY = 0;
+	startX = 0; startY = 0; HSX = 0; HSY = 0; quitX = 0; quitY = 0; GOX = 0; GOY = 0;
 	selected = -1; selectLevel = 0; items = 3;
 	
 	HSFrameX = 0; HSFrameY = 0;
+	minScore = 0; newScore = false;
+
+	single_use_switch = true;
 
 	loadTitleScreen();
 	initLeaderboard();

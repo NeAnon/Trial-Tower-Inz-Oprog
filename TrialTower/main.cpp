@@ -64,7 +64,7 @@ bool init()
 	else
 	{
 		//Create window
-		gWindow = SDL_CreateWindow("TrialTower v0.0.0.0.5", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, GAME_WIDTH, GAME_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+		gWindow = SDL_CreateWindow("TrialTower v0.0.0.0.6", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, GAME_WIDTH, GAME_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 		if (gWindow == NULL)
 		{
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -156,6 +156,8 @@ int main(int argc, char* args[])
 			//Event handler
 			SDL_Event e;
 			bool paused = false;
+			bool gameEnded = false;
+			std::string playername = "";
 
 			bool inLevel = false;
 			std::vector<std::string> lvlList;
@@ -264,6 +266,10 @@ int main(int argc, char* args[])
 								case SDLK_ESCAPE:
 									paused = false;
 									break;
+								case SDLK_SEMICOLON:
+									paused = false;
+									player.hurt(999);
+									break;
 								default:
 									break;
 								}
@@ -325,6 +331,37 @@ int main(int argc, char* args[])
 							}
 						}
 					}
+					else if (gameEnded) {
+						if (e.type == SDL_KEYDOWN) {
+							switch (e.key.keysym.sym) {
+							case SDLK_BACKSPACE:
+								if (playername.size() > 0) { playername.pop_back(); }
+								break;
+							case SDLK_RETURN:
+							case SDLK_ESCAPE:
+								std::cout << "\nFinal score: " << player.getMoney() << "\n";
+								std::cout << "Name: " << playername << "\n\n\n";
+								titleScreen.saveScores(playername, player.getMoney());
+								quit = true;
+								break;
+							default:
+								if(playername.size() < 8){
+									if (e.key.keysym.sym >= 'a' && e.key.keysym.sym <= 'z') {
+										std::cout << ((char)e.key.keysym.sym - 'a') + 'A';
+										playername += ((char)e.key.keysym.sym - 'a') + 'A';
+									}
+									else if ((e.key.keysym.sym >= '0' && e.key.keysym.sym <= '9') || e.key.keysym.sym == ' ') {
+										std::cout << (char)e.key.keysym.sym;
+										playername += (char)e.key.keysym.sym;
+									}
+									else {
+										std::cout << '\n';
+									}
+								}
+								break;
+							}
+						}
+					}
 					else {
 						int action = -1;
 						if (e.type == SDL_KEYDOWN) {
@@ -333,7 +370,12 @@ int main(int argc, char* args[])
 								action = titleScreen.selectOpt(SELECT_CENTER);
 								break;
 							case SDLK_RETURN:
+							if (titleScreen.getSLvl()) {
+								titleScreen.decSelLvl();
+							}
+							else{
 								action = titleScreen.selectOpt(SELECT_CENTER);
+							}
 								break;
 							case SDLK_ESCAPE:
 								action = titleScreen.selectOpt(OPT_QUIT, true);
@@ -381,8 +423,9 @@ int main(int argc, char* args[])
 							loadLevel(lvlList[lvCounter], player, lvlMap, eList, allItems, portal);
 						}
 						else {
-							std::cout << std::endl << "\t\tYOU'RE WINNER!!!" << std::endl;
-							quit = true;
+							inLevel = false;
+							gameEnded = true;
+							titleScreen.checkScore(player.getMoney());
 						}
 					}
 
@@ -403,8 +446,9 @@ int main(int argc, char* args[])
 						player.render();
 					}
 					else {
-						quit = true;
-						std::cout << std::endl << "\t\tYOU LOSE!!!" << std::endl;
+						inLevel = false;
+						gameEnded = true;
+						titleScreen.checkScore(player.getMoney());
 					}
 
 					if (ShowItemRenders) { ShowItemRenders = false; }
@@ -413,7 +457,10 @@ int main(int argc, char* args[])
 					//Outline everything that's rendered
 					WTexture::outlineAll(gRenderer);
 				}
-				else {
+				else if (gameEnded) {
+					titleScreen.renderGameOver(playername);
+				}
+				else{
 					titleScreen.render();
 				}
 
