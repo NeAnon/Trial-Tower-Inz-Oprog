@@ -12,6 +12,9 @@
 #define scaleX WTexture::getScaledX
 #define scaleY WTexture::getScaledY
 
+const int CHAR_W = 24;
+const int CHAR_H = 36;
+const int MARGIN = 8; const int TITLE_OFFSET = 52;
 
 enum {
 	SELECT_CENTER,		//0
@@ -49,8 +52,38 @@ class Title {
 	int quitY;
 
 	int selected;
+	int selectLevel;
 	int items;
 
+	//All leaderboard handling
+	WTexture mLeaderboardText;
+	WTexture mLeaderboardFrame;
+	int HSFrameX; int HSFrameY;
+	SDL_Rect selCharClip;
+	std::vector<std::string> names;
+	std::vector<std::string> scores;
+	
+	void initLeaderboard() {
+		names.resize(10);
+		scores.resize(10);
+		int currScores = 0;
+
+		std::ifstream leaderboard_read{ "leaderboard.score" };
+
+		while (!leaderboard_read.eof() && currScores < 10) {
+			leaderboard_read >> names[currScores];
+			leaderboard_read >> scores[currScores];
+		}
+
+		leaderboard_read.close();
+
+		if (names[9] == "") { names[9] = "AAAAAAAA"; }
+		if (scores[9] == "") { scores[9] = "999999"; }
+
+		//std::cout << "Leaderboard closed.\n";
+		//for (int i = 0; i < 10; i++) {std::cout << names[i] << '\t' << scores[i] << '\n';}
+	}
+	
 	int calcButtonY(int menuPos) {
 		int w = WTexture::getGlobalLHeight();
 		int y = mTitle.getHeight();
@@ -59,6 +92,35 @@ class Title {
 		//Offset from the title + (amount of x-spaces) + (amount of other buttons)
 		return y + 64 + (x * (menuPos + 1)) + (z * menuPos);
 	}
+
+	void renderChar(int x, int y, char c) {
+		if (c >= 'A' && c <= 'Z') {
+			selCharClip.x = ((c - 'A')%6) * CHAR_W;
+			selCharClip.y = ((c - 'A') / 6) * CHAR_H;
+			mLeaderboardText.render(x, y, &selCharClip);
+		}
+		if (c >= '0' && c <= '9') {
+			selCharClip.x = ((c - '0' + 2) % 6) * CHAR_W;
+			selCharClip.y = ((c - '0' + 26) / 6) * CHAR_H;
+			mLeaderboardText.render(x, y, &selCharClip);
+		}
+	}
+		
+	void renderNameScore(std::string& name, std::string& score, int pos) {
+		//render name
+		for (int i = 0; i < name.size(); i++) {
+			renderChar(HSFrameX + MARGIN + (i * CHAR_W), HSFrameY + MARGIN + TITLE_OFFSET + (pos * (CHAR_H + 4)), name[i]);
+		}
+		int scoreOffset = 15 - score.size();
+		//render score
+		for (int i = 0; i < score.size(); i++) {
+			renderChar(HSFrameX + MARGIN + ((scoreOffset + i) * CHAR_W), HSFrameY + MARGIN + TITLE_OFFSET + (pos * (CHAR_H + 4)), score[i]);
+		}
+		if(name.size() && score.size()){
+			renderChar(HSFrameX + MARGIN + (17 * CHAR_W), HSFrameY + MARGIN + TITLE_OFFSET + (pos * (CHAR_H + 4)), 'G');
+		}
+	}
+
 
 public:
 	Title();
@@ -98,7 +160,17 @@ public:
 		}
 		quitX = WTexture::getGlobalLWidth() / 2 - mQuitButton.getWidth() / 2;
 		quitY = calcButtonY(2);
-
+		
+		if (!mLeaderboardText.loadFromFile("resources/font7x12_6x6.png"))
+		{
+			printf("Failed to load font texture! SDL_image Error: %s\n", IMG_GetError());
+		}
+		if (!mLeaderboardFrame.loadFromFile("resources/hi-score_frame.png"))
+		{
+			printf("Failed to load hi-scoreframe texture! SDL_image Error: %s\n", IMG_GetError());
+		}
+		HSFrameX = (WTexture::getGlobalLWidth() / 2) - (mLeaderboardFrame.getWidth() / 2);
+		HSFrameY = (WTexture::getGlobalLHeight() / 2) - (mLeaderboardFrame.getHeight() / 2);
 
 		//quitButtonClip.w = mQuitButton.getWidth(); quitButtonClip.h = mQuitButton.getHeight();
 	}
@@ -120,6 +192,9 @@ public:
 		SDL_RenderDrawRect(rptr, &tempQuitRect);
 	}*/
 
+	int getSLvl() { return selectLevel; }
+	void incSelLvl() { selectLevel++; }
+	void decSelLvl() { selectLevel--; }
 
 	int selectOpt(int dir, bool override = false) {
 		if (!override) {
@@ -128,24 +203,26 @@ public:
 				highlightSelection();
 			}
 			else {
-				switch (dir) {
-				case SELECT_CENTER:
-					return selected;
-				case SELECT_UP:
-					selected = (selected - 1 < 0 ? items - 1 : selected - 1);
-					break;
-				case SELECT_DOWN:
-					selected = (selected + 1 == items ? 0 : selected + 1);
-					break;
-				default:
-					break;
+				if(!getSLvl()){
+					switch (dir) {
+					case SELECT_CENTER:
+						return selected;
+					case SELECT_UP:
+						selected = (selected - 1 < 0 ? items - 1 : selected - 1);
+						break;
+					case SELECT_DOWN:
+						selected = (selected + 1 == items ? 0 : selected + 1);
+						break;
+					default:
+						break;
+					}
 				}
 			}
 			highlightSelection();
 			return -1;
 		}
 		else {
-			selected = dir;
+			if (!getSLvl()) { selected = dir;  }
 			highlightSelection();
 			return dir;
 		}
@@ -211,21 +288,31 @@ public:
 	*/
 
 	void render() {
-		mTitle.render(WTexture::getGlobalLHeight()/2 - mTitle.getWidth()/2, 64);
-		mStartButton.render(startX, startY, &startButtonClip);
-		mHiScoreButton.render(HSX, HSY, &hiScoreClip);
-		mQuitButton.render(quitX, quitY, &quitButtonClip);
+		if(selectLevel == 0)
+		{
+			mTitle.render(WTexture::getGlobalLHeight() / 2 - mTitle.getWidth() / 2, 64);
+			mStartButton.render(startX, startY, &startButtonClip);
+			mHiScoreButton.render(HSX, HSY, &hiScoreClip);
+			mQuitButton.render(quitX, quitY, &quitButtonClip);
+		}
+		else if (selectLevel == 1 && selected == 1) {
+			mLeaderboardFrame.render(HSFrameX, HSFrameY);
+			for (int i = 0; i < 10; i++) {
+				renderNameScore(names[i], scores[i], i);
+			}
+		}
 	}
 };
 
 Title::Title() {
-	//titleClip = {0,0,0,0}			Will be possibly used for title animation
+	titleClip = { 0,0,0,0 };			//Will be possibly used for title animation
 	startButtonClip = { 0, 0, 192, 96 };
 	hiScoreClip = { 0, 0, 192, 96 };
 	quitButtonClip = { 0, 0, 192, 96 };
+	selCharClip = { 0, 0, CHAR_W, CHAR_H };
 
 	startX = 0; startY = 0; HSX = 0; HSY = 0; quitX = 0; quitY = 0;
-	selected = -1; items = 3;
+	selected = -1; selectLevel = 0; items = 3;
 }
 
 inline Title::Title(SDL_Renderer* renderPtr)
@@ -234,15 +321,21 @@ inline Title::Title(SDL_Renderer* renderPtr)
 	mStartButton.setRenderer(renderPtr);
 	mHiScoreButton.setRenderer(renderPtr);
 	mQuitButton.setRenderer(renderPtr);
+	mLeaderboardText.setRenderer(renderPtr);
+	mLeaderboardFrame.setRenderer(renderPtr);
 
 	startButtonClip = { 0, 0, 192, 96 };
 	hiScoreClip = { 0, 0, 192, 96 };
 	quitButtonClip = { 0, 0, 192, 96 };
+	selCharClip = { 0, 0, CHAR_W, CHAR_H };
 
 	startX = 0; startY = 0; HSX = 0; HSY = 0; quitX = 0; quitY = 0;
-	selected = -1; items = 3;
+	selected = -1; selectLevel = 0; items = 3;
+	
+	HSFrameX = 0; HSFrameY = 0;
 
 	loadTitleScreen();
+	initLeaderboard();
 }
 
 inline Title::~Title()

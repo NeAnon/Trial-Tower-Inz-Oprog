@@ -352,8 +352,20 @@ int main(int argc, char* args[])
 							loadLevel(lvlList[lvCounter], player, lvlMap, eList, allItems, portal);
 							inLevel = true;
 							break;
+						case OPT_HI_SCORE:
+							if(!titleScreen.getSLvl())
+							{
+								titleScreen.incSelLvl();
+							}
+							break;
 						case OPT_QUIT:
-							quit = true;
+							if (titleScreen.getSLvl()) {
+								titleScreen.decSelLvl();
+							}
+							else
+							{
+								quit = true;
+							}
 						}
 					}
 				}

@@ -154,10 +154,47 @@
     <Image Include="resources\pauseOverlay.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="resources\enemySliderSheet2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\enemySpriteSheetTransparent2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\enemyWanderSheet2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\itemGlyphs.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\itemList.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\itemText.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\itemTextBold.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\playerSpriteSheetTransparen2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\unknownItem.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\dummy.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\hi-score_button.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\font7x12_6x6.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="levels\sampleLevel.lvl" />
     <None Include="levels\sampleLevel2.lvl" />
     <None Include="levels\introLevel.lvl" />
+    <None Include="leaderboard.score" />
   </ItemGroup>
 </Project>

@@ -40,6 +40,7 @@
     <Image Include="resources\digits.png" />
     <Image Include="resources\dragon_left.png" />
     <Image Include="resources\dragon_right.png" />
+    <Image Include="resources\dummy.png" />
     <Image Include="resources\enemySliderSheet.png" />
     <Image Include="resources\enemySliderSheet2.png" />
     <Image Include="resources\enemySpriteSheetTransparent-1.png" />
@@ -49,6 +50,7 @@
     <Image Include="resources\enemyWanderSheet.png" />
     <Image Include="resources\enemyWanderSheet2.png" />
     <Image Include="resources\floor_wood.png" />
+    <Image Include="resources\font7x12_6x6.png" />
     <Image Include="resources\healthbar.png" />
     <Image Include="resources\healthbarMissing.png" />
     <Image Include="resources\Heart.png" />
@@ -56,6 +58,7 @@
     <Image Include="resources\hero_front.png" />
     <Image Include="resources\hero_left.png" />
     <Image Include="resources\hero_right.png" />
+    <Image Include="resources\hi-score_button.png" />
     <Image Include="resources\itemGlyphs.png" />
     <Image Include="resources\itemList.png" />
     <Image Include="resources\itemText.png" />
@@ -79,6 +82,7 @@
     <Image Include="resources\wall_rock.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="leaderboard.score" />
     <None Include="levels\introLevel.lvl" />
     <None Include="levels\sampleLevel.lvl" />
     <None Include="levels\sampleLevel2.lvl" />
@@ -136,8 +140,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-	  <IncludePath>$(MSBuildProjectDirectory)\lib\SDL2_image-2.6.3\include;$(MSBuildProjectDirectory)\lib\SDL2-2.26.4\include;$(IncludePath)</IncludePath>
-	  <LibraryPath>$(MSBuildProjectDirectory)\lib\SDL2_image-2.6.3\lib\x64;$(MSBuildProjectDirectory)\lib\SDL2-2.26.4\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(MSBuildProjectDirectory)\lib\SDL2_image-2.6.3\include;$(MSBuildProjectDirectory)\lib\SDL2-2.26.4\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(MSBuildProjectDirectory)\lib\SDL2_image-2.6.3\lib\x64;$(MSBuildProjectDirectory)\lib\SDL2-2.26.4\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
