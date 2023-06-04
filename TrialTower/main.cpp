@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <sdl_mixer.h>
 
 //debugging
 #include <iostream>
@@ -98,6 +99,8 @@ bool init()
 	return success;
 }
 
+int init2 = Mix_Init(0);
+
 bool loadMedia()
 {
 	//Loading success flag
@@ -152,6 +155,10 @@ int main(int argc, char* args[])
 		{
 			//Main loop flag
 			bool quit = false;
+
+			Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
+			Mix_Music* music = Mix_LoadMUS("audio/background.wav");
+			Mix_PlayMusic(music, -1);
 
 			//Event handler
 			SDL_Event e;
