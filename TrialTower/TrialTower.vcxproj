@@ -136,8 +136,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(MSBuildProjectDirectory)\lib\SDL2_image-2.6.3\include;$(MSBuildProjectDirectory)\lib\SDL2-2.26.4\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(MSBuildProjectDirectory)\lib\SDL2_image-2.6.3\lib\x64;$(MSBuildProjectDirectory)\lib\SDL2-2.26.4\lib\x64;$(LibraryPath)</LibraryPath>
+	  <IncludePath>$(MSBuildProjectDirectory)\lib\SDL2_image-2.6.3\include;$(MSBuildProjectDirectory)\lib\SDL2-2.26.4\include;$(IncludePath)</IncludePath>
+	  <LibraryPath>$(MSBuildProjectDirectory)\lib\SDL2_image-2.6.3\lib\x64;$(MSBuildProjectDirectory)\lib\SDL2-2.26.4\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

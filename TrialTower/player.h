@@ -362,7 +362,7 @@ public:
 
 		for (int i = 1; i <= 9; i++) {
 			if (player.hasItem(i)) {
-				player.getItem(i)->render(i);
+				player.getItem(i)->render(false, i);
 			}
 		}
 	}

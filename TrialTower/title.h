@@ -23,7 +23,8 @@ enum {
 
 enum {
 	OPT_START = 0,
-	OPT_QUIT = 1
+	OPT_HI_SCORE,
+	OPT_QUIT
 };
 
 class Title {
@@ -31,19 +32,34 @@ class Title {
 	WTexture mTitle;
 	WTexture mStartButton;
 	WTexture mQuitButton;
+	WTexture mHiScoreButton;
 
 	SDL_Rect titleClip;
 	SDL_Rect startButtonClip;
 	SDL_Rect quitButtonClip;
+	SDL_Rect hiScoreClip;
 
 	int startX;
 	int startY;
 
+	int HSX;
+	int HSY;
+	
 	int quitX;
 	int quitY;
 
 	int selected;
 	int items;
+
+	int calcButtonY(int menuPos) {
+		int w = WTexture::getGlobalLHeight();
+		int y = mTitle.getHeight();
+		int z = startButtonClip.h;	//Same for every menu option
+		int x = ((w - (y + 64)) - (z * items)) / (items + 1);
+		//Offset from the title + (amount of x-spaces) + (amount of other buttons)
+		return y + 64 + (x * (menuPos + 1)) + (z * menuPos);
+	}
+
 public:
 	Title();
 
@@ -62,16 +78,26 @@ public:
 		{
 			printf("Failed to load start button texture! SDL_image Error: %s\n", IMG_GetError());
 		}
-
+		
 		startX = WTexture::getGlobalLWidth() / 2 - mStartButton.getWidth() / 2; 
-		startY = WTexture::getGlobalLHeight() / 2 - (mStartButton.getHeight() / 4 + 32);
+		startY = calcButtonY(0);
+		
+		if (!mHiScoreButton.loadFromFile("resources/hi-score_button.png"))
+		{
+			printf("Failed to load start button texture! SDL_image Error: %s\n", IMG_GetError());
+		}
+		
+
+		HSX = WTexture::getGlobalLWidth() / 2 - mHiScoreButton.getWidth() / 2; 
+		HSY = calcButtonY(1);
+		
 		//startButtonClip.w = mStartButton.getWidth(); startButtonClip.h = mStartButton.getHeight();
 		if (!mQuitButton.loadFromFile("resources/quit_button.png"))
 		{
 			printf("Failed to load quit button texture! SDL_image Error: %s\n", IMG_GetError());
 		}
 		quitX = WTexture::getGlobalLWidth() / 2 - mQuitButton.getWidth() / 2;
-		quitY = WTexture::getGlobalLHeight() / 2 + (mQuitButton.getHeight() / 4 + 32);
+		quitY = calcButtonY(2);
 
 
 		//quitButtonClip.w = mQuitButton.getWidth(); quitButtonClip.h = mQuitButton.getHeight();
@@ -129,16 +155,24 @@ public:
 		switch (selected) {
 			case 0:
 				startButtonClip.y = 96;
+				hiScoreClip.y = 0;
 				quitButtonClip.y = 0;
 				break;
 			case 1:
 				startButtonClip.y = 0;
+				hiScoreClip.y = 96;
+				quitButtonClip.y = 0;
+				break;
+			case 2:
+				startButtonClip.y = 0;
+				hiScoreClip.y = 0;
 				quitButtonClip.y = 96;
 				break;
 		}
 	}
 	
-
+	//DEPRECATED MOUSE HANDLING FUNCS
+	/*
 	bool withinStart(int m_X, int m_Y) {
 		int scaledMouseX = scaleX(m_X);
 		int scaledMouseY = scaleY(m_Y);
@@ -174,10 +208,12 @@ public:
 		return false;
 		return true;
 	}
+	*/
 
 	void render() {
 		mTitle.render(WTexture::getGlobalLHeight()/2 - mTitle.getWidth()/2, 64);
 		mStartButton.render(startX, startY, &startButtonClip);
+		mHiScoreButton.render(HSX, HSY, &hiScoreClip);
 		mQuitButton.render(quitX, quitY, &quitButtonClip);
 	}
 };
@@ -185,23 +221,26 @@ public:
 Title::Title() {
 	//titleClip = {0,0,0,0}			Will be possibly used for title animation
 	startButtonClip = { 0, 0, 192, 96 };
+	hiScoreClip = { 0, 0, 192, 96 };
 	quitButtonClip = { 0, 0, 192, 96 };
 
-	startX = 0; startY = 0; quitX = 0; quitY = 0;
-	selected = -1; items = 2;
+	startX = 0; startY = 0; HSX = 0; HSY = 0; quitX = 0; quitY = 0;
+	selected = -1; items = 3;
 }
 
 inline Title::Title(SDL_Renderer* renderPtr)
 {
 	mTitle.setRenderer(renderPtr);
 	mStartButton.setRenderer(renderPtr);
+	mHiScoreButton.setRenderer(renderPtr);
 	mQuitButton.setRenderer(renderPtr);
 
 	startButtonClip = { 0, 0, 192, 96 };
+	hiScoreClip = { 0, 0, 192, 96 };
 	quitButtonClip = { 0, 0, 192, 96 };
 
-	startX = 0; startY = 0; quitX = 0; quitY = 0;
-	selected = -1; items = 2;
+	startX = 0; startY = 0; HSX = 0; HSY = 0; quitX = 0; quitY = 0;
+	selected = -1; items = 3;
 
 	loadTitleScreen();
 }

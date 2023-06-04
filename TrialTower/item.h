@@ -103,9 +103,7 @@ public:
 
 
 	void render(bool exa = false, int slot = 0, int posX = 0, int posY = 0) {
-		if (exa) {
-			scroll.render(0, 0);
-		}
+
 		if (equipped) {
 			items.render(160 + ((slot - 1) * 32), WTexture::getGlobalLHeight(), &itemSprite);
 			if (effect) {
@@ -119,7 +117,10 @@ public:
 			}
 		}
 		else
-		{
+		{		
+			if (exa) {
+			scroll.render(0, 0);
+			}
 			items.render(posX * 32, posY * 32, &itemSprite);
 			if (cost) {
 				workingTextSprite.x = 0;
