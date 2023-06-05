@@ -434,7 +434,7 @@ int main(int argc, char* args[])
 							gameEnded = true;
 							titleScreen.checkScore(player.getMoney());
 						}
-					}
+					}		
 
 					//Render the map
 					lvlMap.renderAll();
